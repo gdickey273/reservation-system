@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>Reservations - The Eddy Pub</title>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <script src="https://use.fontawesome.com/1b460214a3.js"></script>
+  <link rel="stylesheet" href="style.css">
+
+
+</head>
+
+<body>
+
+  <header>
+    <div class="container">
+      <div class="row mt-4">
+        <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+          <img src="images/eddy-logo-transparent.png" alt="The Eddy Logo">
+        </div>
+        <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+          <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Food</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Culture</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Events</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Location</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+        <div class="row mt-4">
+          <div class="col-md-12">
+            <h5>We're excited to have you join us at the Eddy Pub! Please select the number of people in your party and
+              choose a date below to see available reservations</h5>
+          </div>
+        </div>
+
+        <div class="container">
+
+          <form method="post">
+            <div class="row mt-4">
+              <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+                <div class="form-group font-user">
+                  <!-- Date input -->
+                  <label class="control-label" for="date">Date</label>
+                  <input class="form-control" id="date" name="date" placeholder="MM/DD/YYY" type="text" />
+                </div>
+
+              </div>
+            </div>
+
+            <div class="row mt-2">
+              <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <p>Number of People in Your Party</p>
+                <div class="form-group btn-group btn-group-toggle" data-toggle="buttons">
+
+                  <label class="btn btn-secondary active">
+                    <input type="radio" name="options" id="partyOf1" autocomplete="off" checked> 1
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="partyOf2" autocomplete="off"> 2
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="partyOf3" autocomplete="off"> 3
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="partyOf4" autocomplete="off" checked> 4
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="partyOf5" autocomplete="off"> 5
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="partyOf6" autocomplete="off"> 6
+                  </label>
+                  <label class="btn btn-secondary">
+                    <input type="radio" name="options" id="partyOf7" autocomplete="off"> 7+
+                  </label>
+
+              </div>
+            </div>
+
+            
+
+            </div>
+            <div class="form-group">
+              <!-- Submit button -->
+              <button class="btn btn-primary " name="submit" type="submit">Submit</button>
+            </div>
+
+
+
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

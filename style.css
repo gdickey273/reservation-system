@@ -1,0 +1,22 @@
+header img{
+  height: 10rem;
+  width: auto;
+
+}
+
+header .nav{
+  float: right;
+}
+
+#date{
+  width: 50%;
+}
+
+/* .font-user{
+  position:relative;
+}
+
+.font-user i{
+  position: absolute;
+  right:0;
+} */
