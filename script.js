@@ -8,3 +8,12 @@ $(document).ready(function(){
       autoclose: true,
   })
 })
+
+$(".partyNumberButton").on("click", function(){
+  $(".partyNumberButton").each(function(){
+    $(this).removeClass("active");
+  })
+  $(this).addClass("active");
+  var partyButton = $(this).children();
+  console.log(parseInt(partyButton.attr("id").split("-")[1]));
+});
