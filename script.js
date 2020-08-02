@@ -5,64 +5,64 @@
 
   var indoorTables = [
     {
-      name: "Table 1",
+      tableNumber: "1",
       capacity: 2,
       reservations: []
     },
     {
-      name: "Table 2",
+      tableNumber: "2",
       capacity: 2,
       reservations: []
     },
     {
-      name: "Table 3",
+      tableNumber: "3",
       capacity: 4,
       reservations: []
     },
     {
-      name: "Table 4",
+      tableNumber: "4",
       capacity: 4,
       reservations: []
     },
     {
-      name: "Table 5",
+      tableNumber: "5",
       capacity: 6,
       reservations: []
     },
     {
-      name: "Table 6",
+      tableNumber: "6",
       capacity: 4,
       reservations: []
     },
     {
-      name: "Table 7",
+      tableNumber: "7",
       capacity: 4,
       reservations: []
     },
     {
-      name: "Table 8",
+      tableNumber: "8",
       capacity: 6,
       reservations: []
     }
   ]
   var outdoorTables = [
     {
-      name: "Table 100",
+      tableNumber: "100",
       capacity: 5,
       reservations: []
     },
     {
-      name: "Table 102",
+      tableNumber: "102",
       capacity: 5,
       reservations: []
     },
     {
-      name: "Table 105",
+      tableNumber: "105",
       capacity: 5,
       reservations: []
     },
     {
-      name: "Table 106",
+      tableNumber: "106",
       capacity: 6,
       reservations: []
     }
@@ -70,8 +70,11 @@
   var partyNumber = 0;
   var selectedDate = undefined;
   var dayOfWeek;
-  var reservationStartTime;
-  var reservationEndTime;
+  var time;
+  var earliestResTime;
+  var latestResTime;
+
+  var cloud = firebase.firestore();
 
 
   //Something to do with the calendar widget
@@ -113,9 +116,33 @@
     }
   });
 
+  function initializeTables(){
+
+  }
+
   function checkAvailability() {
+
 
   }
 
   
+
+
+
+
+  //Push element to a nested firestore array
+
+  // cloud.doc("scheduleByDate/08102020/insideTables/1").update({
+    
+  //   reservations: 
+  //   firebase.firestore.FieldValue.arrayUnion(
+  //     {time: "20:00",
+  //     firstName: "Betsy",
+  //   secondName: "Sith",
+  //   partyNumber: 1,
+  //   phone: 999990234234,
+  //   email: "betsyismyname@gmail.com",
+  //   tableNumber: 1})
+  // });
+
 
