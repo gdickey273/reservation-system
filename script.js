@@ -1,6 +1,7 @@
-$(document).ready(function () {
-  var database = firebase.database().ref();
 
+
+
+  // Get a reference to the database service
 
   var indoorTables = [
     {
@@ -116,6 +117,5 @@ $(document).ready(function () {
 
   }
 
-  database.child("Text").set("Some Value");
+  
 
-});
