@@ -11,7 +11,29 @@
   <script src="https://use.fontawesome.com/1b460214a3.js"></script>
   <link rel="stylesheet" href="style.css">
 
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
 
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyBbs9m1s1ZRY1SXMRQGPPjFj5krxX09X4c",
+      authDomain: "eddy-pub-reservation-system.firebaseapp.com",
+      databaseURL: "https://eddy-pub-reservation-system.firebaseio.com",
+      projectId: "eddy-pub-reservation-system",
+      storageBucket: "eddy-pub-reservation-system.appspot.com",
+      messagingSenderId: "703341060708",
+      appId: "1:703341060708:web:24a67af9778ba170e67571",
+      measurementId: "G-98PZSZ4GWF"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+  </script>
 </head>
 
 <body>
@@ -96,15 +118,15 @@
                     <input type="radio" name="options" id="partyOf-7" autocomplete="off"> 7+
                   </label>
 
+                </div>
               </div>
+
+
+
             </div>
 
-            
-
-            </div>
-            
             <div class="form-group">
-              
+
               <!-- Submit button -->
               <button class="btn btn-primary " name="submit" type="submit">Submit</button>
             </div>
