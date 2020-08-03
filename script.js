@@ -3,7 +3,7 @@ var dateTracker;
 
 // Get a reference to the database service
 
-var indoorTables = [
+var insideTables = [
   {
     tableNumber: "1",
     capacity: 2,
@@ -45,7 +45,7 @@ var indoorTables = [
     reservations: []
   }
 ]
-var outdoorTables = [
+var outsideTables = [
   {
     tableNumber: "100",
     capacity: 5,
@@ -91,6 +91,10 @@ $(document).ready(function () {
   })
 })
 
+function isValidTime(){
+  return (time >= earliestResTime && time <= latestResTime)
+}
+
 //Saves party number to variable when party number button is clicked
 $(".partyNumberButton").on("click", function () {
   $(".partyNumberButton").each(function () {
@@ -101,7 +105,7 @@ $(".partyNumberButton").on("click", function () {
   partyNumber = parseInt(partyButton.attr("id").split("-")[1]);
 
   //If date is already chosen, run checkAvailability() once party number is set
-  if (selectedDate != undefined) {
+  if (selectedDate != undefined && isValidTime) {
     checkAvailability();
   }
 });
@@ -121,17 +125,34 @@ $("#date").change(function () {
   initializeTables();
 
   //If party number is already set, run checkAvailability() once day is chosen
-  if (partyNumber > 0) {
+  if (partyNumber > 0 && isValidTime()) {
     checkAvailability();
   }
 });
 
 
-
+//For each table object in inside/outside table array, pull reservation data from cloud and push to table object's reservation array
 function initializeTables() {
   var docPath = "scheduleByDate/" + selectedDate._i + "/";
-  indoorTables.forEach(function (table) {
+
+  insideTables.forEach(function (table) {
     cloud.doc(docPath + "insideTables/" + table.tableNumber).get().then(function (doc) {
+      var data = doc.data();
+      console.log(data);
+
+      if (data != undefined && data.reservations != undefined) {
+        console.log(data.reservations);
+
+        data.reservations.forEach(function (resObj) {
+          table.reservations.push(resObj);
+        })
+      }
+
+    });
+  });
+
+  outsideTables.forEach(function (table) {
+    cloud.doc(docPath + "outsideTables/" + table.tableNumber).get().then(function (doc) {
       var data = doc.data();
       console.log(data);
 
