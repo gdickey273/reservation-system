@@ -89,6 +89,10 @@ $(document).ready(function () {
     todayHighlight: true,
     autoclose: true,
   })
+
+  $('.timepicker').wickedpicker();
+
+
 })
 
 function isValidTime(){
