@@ -71,8 +71,8 @@ var partyNumber = 0;
 var selectedDate = undefined;
 var dayOfWeek;
 var time;
-var earliestResTime;
-var latestResTime;
+var earliestResTime = "";
+var latestResTime = "";
 var dataObj;
 
 var cloud = firebase.firestore();
@@ -95,15 +95,46 @@ $(document).ready(function () {
 
 })
 
-function isValidTime(){
-  return (time >= earliestResTime && time <= latestResTime)
+//Looks at the dayOfWeek variable and updates earliest and latest reservation time to match that day's business hours
+function updateOperatingHours() {
+  console.log("updating hours");
+  switch (dayOfWeek) {
+    case 0:
+    case 6:
+      console.log("weekend switch");
+      earliestResTime = moment("10:00", "HH:mm");
+      latestResTime = moment("20:00", "HH:mm");
+      break;
+
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      console.log("weekday switch");
+      earliestResTime = moment("16:00", "HH:mm");
+      latestResTime = moment("19:30", "HH:mm");
+  }
+}
+
+//Returns true if chosen time is within the day's operating hours and false otherwise
+function isValidTime() {
+  if (dayOfWeek === 1) {
+    return false;
+  }
+  if (time.isAfter(earliestResTime) || time.isSame(earliestResTime)) {
+    if (time.isBefore(latestResTime) || time.isSame(latestResTime)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 
 
 //Saves date to selectedDate var and day of week (0-6) to dayOfWeek var
 $("#date").change(function () {
-  if(dateTracker === $(this).val()){
+  if (dateTracker === $(this).val()) {
     return;
   }
   dateTracker = $(this).val();
@@ -111,9 +142,11 @@ $("#date").change(function () {
   selectedDate = moment($(this).val().replace(/\//g, ""), "L");
   dateCopy = moment($(this).val().replace(/\//g, ""), "L");
   dayOfWeek = selectedDate.day();
+  updateOperatingHours();
   console.log(selectedDate);
 
   initializeTables();
+
 
   //If party number is already set, run checkAvailability() once day is chosen
   if (partyNumber > 0 && isValidTime()) {
@@ -122,9 +155,9 @@ $("#date").change(function () {
 });
 
 //Saves time to time var when time field is changed
-$(".timepicker").change(function (){
-  time = $(this).val();
-  
+$(".timepicker").change(function () {
+  time = moment($(this).val(), "h:mm A");
+  console.log(time);
   if (partyNumber > 0 && selectedDate != undefined) {
     checkAvailability();
   }
@@ -158,6 +191,7 @@ function initializeTables() {
         console.log(data.reservations);
 
         data.reservations.forEach(function (resObj) {
+          resObj.time = moment(resObj.time, "h:mm A");
           table.reservations.push(resObj);
         })
       }
@@ -182,7 +216,91 @@ function initializeTables() {
   });
 }
 
+function findInsideTable(time){
+  var bestOption;
+  var emptySeats;
+  var deadTime = 999;
+  var isEnoughTime;
+
+  for(let table of insideTables){
+    isEnoughTime = true;
+    emptySeats = table.capacity - partyNumber;
+
+    //Dont consider 6 tops for 1 or 2 people and return bestOption so far
+    if(emptySeats > 3){
+      return bestOption;
+    }
+
+
+    //If a table doesn't have any reservations update bestOption and return it
+    if(table.reservations === undefined && emptySeats >= 0){
+      bestOption = {tableNumber : table.tableNumber,
+        time,
+        deadTime,
+        emptySeats};
+      return bestOption; 
+    } else{
+
+      //for each reservation in table
+      for (let res of table.reservations){
+
+        //if table isnt big enough for party, skip to next table
+        if(emptySeats < 0){
+          break;
+        }
+
+
+        //If target time is before existing res time, make sure there's 90 minute buffer. If not break and don't consider that table.
+        //If theres more than 90 minutes buffer set dead time to 
+        if(time.isBefore(reservation.time)){
+          if(reservation.time.diff(time, "minutes") < 90){
+            isEnoughTime = false;
+            break;
+          } else {
+            deadTime = reservation.time.diff(time, "minutes") - 90;
+            if(deadTime < bestOption.deadTime){
+              bestOption = {tableNumber : table.tableNumber,
+                time,
+                deadTime,
+                emptySeats};
+              if(deadTime === 0){
+                return bestOption;
+              }
+            }
+          
+          }
+
+          //if target time is after existing res time, make sure theres 90 minute buffer. If not, keep looking to see if there's 
+        } else if (time.isAfter(reservation.time)){
+          if (time.diff(reservation.time, "minutes") >= 90){
+            deadTime = time.diff(reservation.time, "minutes") - 90;
+            if(deadTime < bestOption.deadTime){
+              bestOption = 
+              {tableNumber : table.tableNumber,
+                time,
+                deadTime,
+                emptySeats};
+
+              if(deadTime === 0){
+                return bestOption;
+              }
+            }
+            isEnoughTime = true;
+          } else {
+            isEnoughTime = false;
+            break;
+          } 
+        }
+      }
+    } 
+    
+  };
+}
+
+
+
 function checkAvailability() {
+
 
 
 }
@@ -191,20 +309,20 @@ function checkAvailability() {
 
 
 
-
-  //Push element to a nested firestore array
-
-  // cloud.doc("scheduleByDate/08102020/insideTables/1").update({
+//push to existing nexted array
+  // cloud.doc("scheduleByDate/08112020/insideTables/3").update({
 
   //   reservations: 
   //   firebase.firestore.FieldValue.arrayUnion(
-  //     {time: "20:00",
+  //     {time: "6:30:00pm",
   //     firstName: "Betsy",
   //   secondName: "Sith",
   //   partyNumber: 1,
   //   phone: 999990234234,
   //   email: "betsyismyname@gmail.com",
-  //   tableNumber: 1})
+  //   tableNumber: 3})
   // });
+
+ 
 
 
