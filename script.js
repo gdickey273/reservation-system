@@ -1,5 +1,5 @@
 
-
+var dateTracker;
 
 // Get a reference to the database service
 
@@ -108,10 +108,13 @@ $(".partyNumberButton").on("click", function () {
 
 //Saves date to selectedDate var and day of week (0-6) to dayOfWeek var
 $("#date").change(function () {
-  if (selectedDate !== moment($(this).val().replace(/\//g, ""), "L")) {
-    
+  if(dateTracker === $(this).val()){
+    return;
+  }
+  dateTracker = $(this).val();
   console.log($(this).val());
   selectedDate = moment($(this).val().replace(/\//g, ""), "L");
+  dateCopy = moment($(this).val().replace(/\//g, ""), "L");
   dayOfWeek = selectedDate.day();
   console.log(selectedDate);
 
@@ -121,11 +124,9 @@ $("#date").change(function () {
   if (partyNumber > 0) {
     checkAvailability();
   }
-  }
-
-  return false;
-
 });
+
+
 
 function initializeTables() {
   var docPath = "scheduleByDate/" + selectedDate._i + "/";
