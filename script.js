@@ -99,20 +99,7 @@ function isValidTime(){
   return (time >= earliestResTime && time <= latestResTime)
 }
 
-//Saves party number to variable when party number button is clicked
-$(".partyNumberButton").on("click", function () {
-  $(".partyNumberButton").each(function () {
-    $(this).removeClass("active");
-  })
-  $(this).addClass("active");
-  var partyButton = $(this).children();
-  partyNumber = parseInt(partyButton.attr("id").split("-")[1]);
 
-  //If date is already chosen, run checkAvailability() once party number is set
-  if (selectedDate != undefined && isValidTime) {
-    checkAvailability();
-  }
-});
 
 //Saves date to selectedDate var and day of week (0-6) to dayOfWeek var
 $("#date").change(function () {
@@ -134,6 +121,29 @@ $("#date").change(function () {
   }
 });
 
+//Saves time to time var when time field is changed
+$(".timepicker").change(function (){
+  time = $(this).val();
+  
+  if (partyNumber > 0 && selectedDate != undefined) {
+    checkAvailability();
+  }
+});
+
+//Saves party number to variable when party number button is clicked
+$(".partyNumberButton").on("click", function () {
+  $(".partyNumberButton").each(function () {
+    $(this).removeClass("active");
+  })
+  $(this).addClass("active");
+  var partyButton = $(this).children();
+  partyNumber = parseInt(partyButton.attr("id").split("-")[1]);
+
+  //If date is already chosen, run checkAvailability() once party number is set
+  if (selectedDate != undefined && isValidTime) {
+    checkAvailability();
+  }
+});
 
 //For each table object in inside/outside table array, pull reservation data from cloud and push to table object's reservation array
 function initializeTables() {
