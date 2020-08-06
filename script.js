@@ -48,17 +48,17 @@ var insideTables = [
 var outsideTables = [
   {
     tableNumber: "100",
-    capacity: 5,
+    capacity: 4,
     reservations: []
   },
   {
     tableNumber: "102",
-    capacity: 5,
+    capacity: 4,
     reservations: []
   },
   {
     tableNumber: "105",
-    capacity: 5,
+    capacity: 4,
     reservations: []
   },
   {
@@ -67,13 +67,22 @@ var outsideTables = [
     reservations: []
   }
 ]
-var partyNumber = 0;
+
+//var for testing
+var tableRes; 
+
+
+
+//party number and time initialized for ease of testing
+var partyNumber = 1;
 var selectedDate = undefined;
 var dayOfWeek;
-var time;
+var time  = moment("5:30 PM", "h:mm A");
 var earliestResTime = "";
 var latestResTime = "";
 var dataObj;
+var deferredArray = [];
+var deferred;
 
 var cloud = firebase.firestore();
 
@@ -93,15 +102,13 @@ $(document).ready(function () {
   $('.timepicker').wickedpicker();
 
 
-})
+});
 
 //Looks at the dayOfWeek variable and updates earliest and latest reservation time to match that day's business hours
 function updateOperatingHours() {
-  console.log("updating hours");
   switch (dayOfWeek) {
     case 0:
     case 6:
-      console.log("weekend switch");
       earliestResTime = moment("10:00", "HH:mm");
       latestResTime = moment("20:00", "HH:mm");
       break;
@@ -110,7 +117,6 @@ function updateOperatingHours() {
     case 3:
     case 4:
     case 5:
-      console.log("weekday switch");
       earliestResTime = moment("16:00", "HH:mm");
       latestResTime = moment("19:30", "HH:mm");
   }
@@ -138,29 +144,26 @@ $("#date").change(function () {
     return;
   }
   dateTracker = $(this).val();
-  console.log($(this).val());
   selectedDate = moment($(this).val().replace(/\//g, ""), "L");
   dateCopy = moment($(this).val().replace(/\//g, ""), "L");
   dayOfWeek = selectedDate.day();
   updateOperatingHours();
-  console.log(selectedDate);
 
   initializeTables();
 
 
   //If party number is already set, run checkAvailability() once day is chosen
-  if (partyNumber > 0 && isValidTime()) {
-    checkAvailability();
-  }
+  // if (partyNumber > 0 && isValidTime()) {
+  //   checkAvailability();
+  // }
 });
 
 //Saves time to time var when time field is changed
 $(".timepicker").change(function () {
   time = moment($(this).val(), "h:mm A");
-  console.log(time);
-  if (partyNumber > 0 && selectedDate != undefined) {
-    checkAvailability();
-  }
+  // if (partyNumber > 0 && selectedDate != undefined) {
+  //   checkAvailability();
+  // }
 });
 
 //Saves party number to variable when party number button is clicked
@@ -172,78 +175,101 @@ $(".partyNumberButton").on("click", function () {
   var partyButton = $(this).children();
   partyNumber = parseInt(partyButton.attr("id").split("-")[1]);
 
+
+  console.log("party number in listener------",partyNumber);
   //If date is already chosen, run checkAvailability() once party number is set
-  if (selectedDate != undefined && isValidTime) {
-    checkAvailability();
-  }
+  // if (selectedDate != undefined && isValidTime) {
+  //   checkAvailability();
+  // }
+});
+
+$("#submit-button").click(function(event){
+  event.preventDefault();
+  checkAvailability();
 });
 
 //For each table object in inside/outside table array, pull reservation data from cloud and push to table object's reservation array
 function initializeTables() {
   var docPath = "scheduleByDate/" + selectedDate._i + "/";
 
-  insideTables.forEach(function (table) {
-    cloud.doc(docPath + "insideTables/" + table.tableNumber).get().then(function (doc) {
-      var data = doc.data();
-      console.log(data);
+  
 
-      if (data != undefined && data.reservations != undefined) {
-        console.log(data.reservations);
-
-        data.reservations.forEach(function (resObj) {
-          resObj.time = moment(resObj.time, "h:mm A");
-          table.reservations.push(resObj);
-        })
-      }
-
+    insideTables.forEach(function (table) {
+      deferred = cloud.doc(docPath + "insideTables/" + table.tableNumber).get().then(function (doc) {
+        var data = doc.data();
+  
+        if (data != undefined && data.reservations != undefined) {
+  
+          data.reservations.forEach(function (resObj) {
+            resObj.time = moment(resObj.time, "h:mm A");
+            table.reservations.push(resObj);
+          })
+        }
+      
+      });
+      //deferredArray.push(deferred);
     });
+  
+  
+  
+  
+    outsideTables.forEach(function (table) {
+    deferred = cloud.doc(docPath + "outsideTables/" + table.tableNumber).get().then(function (doc) {
+        var data = doc.data();
+  
+        if (data != undefined && data.reservations != undefined) {
+  
+          data.reservations.forEach(function (resObj) {
+            table.reservations.push(resObj);
+          })
+        }
+        
+      });
+      deferredArray.push(deferred);
+    
   });
 
-  outsideTables.forEach(function (table) {
-    cloud.doc(docPath + "outsideTables/" + table.tableNumber).get().then(function (doc) {
-      var data = doc.data();
-      console.log(data);
-
-      if (data != undefined && data.reservations != undefined) {
-        console.log(data.reservations);
-
-        data.reservations.forEach(function (resObj) {
-          table.reservations.push(resObj);
-        })
-      }
-
-    });
-  });
+  
 }
 
 function findInsideTable(time){
-  var bestOption;
+  console.log("party number inside find table------",partyNumber);
   var emptySeats;
   var deadTime = 999;
-  var isEnoughTime;
+  var bestOption = {deadTime: deadTime};
 
   for(let table of insideTables){
-    isEnoughTime = true;
+    console.log("-----next table------");
+    console.log("table: ",table);
+    console.log("table reservations: ", table.reservations);
+
+    
+   tableRes = table.reservations;
     emptySeats = table.capacity - partyNumber;
 
     //Dont consider 6 tops for 1 or 2 people and return bestOption so far
     if(emptySeats > 3){
+      console.log("----Starting to look at tables too large for party! Return: best option-----");
       return bestOption;
     }
 
 
     //If a table doesn't have any reservations update bestOption and return it
-    if(table.reservations === undefined && emptySeats >= 0){
+    
+    //HELP PLEASE
+    //Why is table.reservations.length 0 here but not in console?
+    if(table.reservations.length === 0 && emptySeats >= 0){
       bestOption = {tableNumber : table.tableNumber,
-        time,
+        time: time.format("h:mm A"),
         deadTime,
         emptySeats};
+        console.log("----no reservations at table! Return: best option-----");
       return bestOption; 
     } else{
 
       //for each reservation in table
-      for (let res of table.reservations){
-
+      for (let reservation of table.reservations){
+        console.log("-----next reseravtion-----")
         //if table isnt big enough for party, skip to next table
         if(emptySeats < 0){
           break;
@@ -251,43 +277,138 @@ function findInsideTable(time){
 
 
         //If target time is before existing res time, make sure there's 90 minute buffer. If not break and don't consider that table.
-        //If theres more than 90 minutes buffer set dead time to 
+        //If theres more than 90 minutes buffer set dead time to difference - 90
         if(time.isBefore(reservation.time)){
           if(reservation.time.diff(time, "minutes") < 90){
-            isEnoughTime = false;
             break;
           } else {
             deadTime = reservation.time.diff(time, "minutes") - 90;
+            console.log("Dead time: " + deadTime);
             if(deadTime < bestOption.deadTime){
               bestOption = {tableNumber : table.tableNumber,
-                time,
+                time: time.format("h:mm A"),
                 deadTime,
                 emptySeats};
-              if(deadTime === 0){
-                return bestOption;
-              }
+              
+            }
+            if(bestOption.deadTime === 0){
+              console.log("----dead time = 0! Return: best option-----");
+              return bestOption;
             }
           
           }
 
-          //if target time is after existing res time, make sure theres 90 minute buffer. If not, keep looking to see if there's 
+          //if target time is after existing res time, make sure theres 90 minute buffer. If not, look at next table. If 90 minutes buffer, set dead time and look at next reservation to ensure theres enough buffer there.
         } else if (time.isAfter(reservation.time)){
           if (time.diff(reservation.time, "minutes") >= 90){
             deadTime = time.diff(reservation.time, "minutes") - 90;
+            console.log("Dead time: " + deadTime);
             if(deadTime < bestOption.deadTime){
               bestOption = 
               {tableNumber : table.tableNumber,
-                time,
+                time: time.format("h:mm A"),
                 deadTime,
                 emptySeats};
 
-              if(deadTime === 0){
-                return bestOption;
-              }
+              // if(deadTime === 0){
+              //   console.log("----no dead time at table! Return: best option-----");
+              //   return bestOption;
+              // }
             }
-            isEnoughTime = true;
           } else {
-            isEnoughTime = false;
+            break;
+          } 
+        }
+      }
+    } 
+    
+  };
+}
+
+function findOutsideTable(time){
+  
+  var emptySeats;
+  var deadTime = 999;
+  var bestOption = {deadTime: deadTime};
+
+  for(let table of outsideTables){
+    console.log("-----next table------");
+    console.log("table: ",table);
+    console.log("table reservations: ", table.reservations);
+
+    
+   tableRes = table.reservations;
+    emptySeats = table.capacity - partyNumber;
+
+    //Dont consider 6 tops for 1 or 2 people and return bestOption so far
+    if(emptySeats > 3){
+      console.log("----Starting to look at tables too large for party! Return: best option-----");
+      return bestOption;
+    }
+
+
+    //If a table doesn't have any reservations update bestOption and return it
+    
+    //HELP PLEASE
+    //Why is table.reservations.length 0 here but not in console?
+    if(table.reservations.length === 0 && emptySeats >= 0){
+      bestOption = {tableNumber : table.tableNumber,
+        time: time.format("h:mm A"),
+        deadTime,
+        emptySeats};
+        console.log("----no reservations at table! Return: best option-----");
+      return bestOption; 
+    } else{
+
+      //for each reservation in table
+      for (let reservation of table.reservations){
+        console.log("-----next reseravtion-----")
+        //if table isnt big enough for party, skip to next table
+        if(emptySeats < 0){
+          break;
+        }
+
+
+        //If target time is before existing res time, make sure there's 90 minute buffer. If not break and don't consider that table.
+        //If theres more than 90 minutes buffer set dead time to difference - 90
+        if(time.isBefore(reservation.time)){
+          if(reservation.time.diff(time, "minutes") < 90){
+            break;
+          } else {
+            deadTime = reservation.time.diff(time, "minutes") - 90;
+            console.log("Dead time: " + deadTime);
+            if(deadTime < bestOption.deadTime){
+              bestOption = {tableNumber : table.tableNumber,
+                time: time.format("h:mm A"),
+                deadTime,
+                emptySeats};
+              
+            }
+            if(bestOption.deadTime === 0){
+              console.log("----no reservations before target time and dead time = 0! Return: best option-----");
+              return bestOption;
+            }
+          
+          }
+
+          //if target time is after existing res time, make sure theres 90 minute buffer. If not, look at next table. If 90 minutes buffer, set dead time and look at next reservation to ensure theres enough buffer there.
+        } else if (time.isAfter(reservation.time)){
+          if (time.diff(reservation.time, "minutes") >= 90){
+            deadTime = time.diff(reservation.time, "minutes") - 90;
+            console.log("Dead time: " + deadTime);
+            if(deadTime < bestOption.deadTime){
+              bestOption = 
+              {tableNumber : table.tableNumber,
+                time: time.format("h:mm A"),
+                deadTime,
+                emptySeats};
+
+              // if(deadTime === 0){
+              //   console.log("----no dead time at table! Return: best option-----");
+              //   return bestOption;
+              // }
+            }
+          } else {
             break;
           } 
         }
@@ -298,10 +419,16 @@ function findInsideTable(time){
 }
 
 
-
 function checkAvailability() {
+$.when.apply($, deferredArray).done(function(){
+  var bestOptionInside = findInsideTable(time);
+  console.log("------best option inside------");
+  console.log(bestOptionInside);
 
-
+  var bestOptionOutside = findOutsideTable(time);
+  console.log("------best option outside------");
+  console.log(bestOptionOutside);
+});
 
 }
 

@@ -34,7 +34,7 @@
 
     var pluginName = "wickedpicker",
         defaults = {
-            now: today.getHours() + ':00',
+            now: '12:00', //today.getHours()
             twentyFour: false,
             upArrow: 'wickedpicker__controls__control-up',
             downArrow: 'wickedpicker__controls__control-down',
