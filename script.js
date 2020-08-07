@@ -247,10 +247,14 @@ function findInsideTable(time){
    tableRes = table.reservations;
     emptySeats = table.capacity - partyNumber;
 
-    //Dont consider 6 tops for 1 or 2 people and return bestOption so far
+    //Dont consider 6 tops for 1 or 2 people. Return bestOption so far if it exists, otherwise return undefined to look for a different time
     if(emptySeats > 3){
-      console.log("----Starting to look at tables too large for party! Return: best option-----");
-      return bestOption;
+      if(bestOption.tableNumber === undefined){
+        return undefined;
+      } else{
+        console.log("----Starting to look at tables too large for party! Return: best option-----");
+        return bestOption;
+      }  
     }
 
 
@@ -261,7 +265,7 @@ function findInsideTable(time){
     if(table.reservations.length === 0 && emptySeats >= 0){
       bestOption = {tableNumber : table.tableNumber,
         time: time.format("h:mm A"),
-        deadTime,
+        deadTime: time.diff( earliestResTime, "minutes"),
         emptySeats};
         console.log("----no reservations at table! Return: best option-----");
       return bestOption; 
@@ -323,6 +327,8 @@ function findInsideTable(time){
     } 
     
   };
+
+  return undefined;
 }
 
 function findOutsideTable(time){
@@ -340,11 +346,15 @@ function findOutsideTable(time){
    tableRes = table.reservations;
     emptySeats = table.capacity - partyNumber;
 
-    //Dont consider 6 tops for 1 or 2 people and return bestOption so far
-    if(emptySeats > 3){
+   //Dont consider 6 tops for 1 or 2 people. Return bestOption so far if it exists, otherwise return undefined to look for a different time
+   if(emptySeats > 3){
+    if(bestOption.tableNumber === undefined){
+      return undefined;
+    } else{
       console.log("----Starting to look at tables too large for party! Return: best option-----");
       return bestOption;
-    }
+    }  
+  }
 
 
     //If a table doesn't have any reservations update bestOption and return it
@@ -354,7 +364,7 @@ function findOutsideTable(time){
     if(table.reservations.length === 0 && emptySeats >= 0){
       bestOption = {tableNumber : table.tableNumber,
         time: time.format("h:mm A"),
-        deadTime,
+        deadTime: time.diff( earliestResTime, "minutes"),
         emptySeats};
         console.log("----no reservations at table! Return: best option-----");
       return bestOption; 
@@ -416,12 +426,19 @@ function findOutsideTable(time){
     } 
     
   };
+
+  return undefined;
 }
 
 
 function checkAvailability() {
 $.when.apply($, deferredArray).done(function(){
-  var bestOptionInside = findInsideTable(time);
+  var bestOptionInside = undefined;
+  while(bestOptionInside === undefined){
+    bestOptionInside = findInsideTable(time);
+  
+  }
+  
   console.log("------best option inside------");
   console.log(bestOptionInside);
 
