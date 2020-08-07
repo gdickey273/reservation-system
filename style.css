@@ -12,7 +12,17 @@ header .nav{
   width: 50%;
 }
 
+#reservation-selection-div{
+  display: none;
+}
 
+#inside-results{
+  border: 4px solid #043c5b;
+}
+
+#outside-results{
+  border: 4px solid #043c5b;
+}
 
 /* .font-user{
   position:relative;
