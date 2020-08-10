@@ -159,11 +159,6 @@ $("#date").change(function () {
 
   initializeTables();
 
-
-  //If party number is already set, run checkAvailability() once day is chosen
-  // if (partyNumber > 0 && isValidTime()) {
-  //   checkAvailability();
-  // }
 });
 
 //Saves time to time var when time field is changed
@@ -244,7 +239,7 @@ function findTable(tableArray, time) {
   console.log("party number find table------", partyNumber);
   var emptySeats;
   var deadTime = 999;
-  var bestOption = { deadTime: deadTime };
+  var bestOption = { deadTime: deadTime};
 
   for (let table of tableArray) {
     console.log("-----next table------");
@@ -274,7 +269,10 @@ function findTable(tableArray, time) {
         tableNumber: table.tableNumber,
         time: time.format("HHmm"),
         deadTime: time.diff(earliestResTime, "minutes"),
-        emptySeats
+        emptySeats,
+        partyNumber,
+        date: selectedDate.format("MM/DD/YYYY"),
+        dayOfWeek
       };
       console.log("----no reservations at table! Return: best option-----");
       return bestOption;
@@ -302,7 +300,10 @@ function findTable(tableArray, time) {
                 tableNumber: table.tableNumber,
                 time: time.format("HHmm"),
                 deadTime,
-                emptySeats
+                emptySeats,
+                partyNumber,
+                date: selectedDate.format("MM/DD/YYYY"),
+                dayOfWeek
               };
 
             }
@@ -326,7 +327,10 @@ function findTable(tableArray, time) {
                 tableNumber: table.tableNumber,
                 time: time.format("HHmm"),
                 deadTime,
-                emptySeats
+                emptySeats,
+                partyNumber,
+              date: selectedDate.format("MM/DD/YYYY"),
+              dayOfWeek
               };
               console.log("-----best option-----" + JSON.stringify(bestOption));
               if (deadTime === 0 && i === table.reservations.length - 1) {
@@ -519,7 +523,7 @@ function checkAvailability() {
 
 
     $("#reservation-select-confirm-btn").on("click", function(event){
-      
+      window.location.href = "confirmreservation.html";
     });
 
   });
