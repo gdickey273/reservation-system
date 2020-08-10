@@ -124,9 +124,9 @@ function updateOperatingHours() {
     case 4:
     case 5:
 
-
+      //CHANGE LATEST RES TIME TO 1930 WHEN TESTING IS DONE
       earliestResTime = moment("1600", "HHmm");
-      latestResTime = moment("1930", "HHmm");
+      latestResTime = moment("2030", "HHmm");
   }
 }
 
@@ -205,7 +205,7 @@ function initializeTables() {
   insideTables.forEach(function (table) {
     deferred = cloud.doc(docPath + "insideTables/" + table.tableNumber).get().then(function (doc) {
       var data = doc.data();
-
+      table.reservations = [];
       if (data != undefined && data.reservations != undefined) {
 
         data.reservations.forEach(function (resObj) {
@@ -451,7 +451,7 @@ function checkAvailability() {
 
     function buildResSelectionDiv() {
       var resDiv = $("#reservation-selection-div");
-      $("#results-header").remove();
+      $("#results-header").empty();
       var resultsHeader = $("<h5>").attr("id", "results-header");
       var insideHeader = $("<p>").html("Inside");
       var outsideHeader = $("<p>").html("Outside");
@@ -499,15 +499,29 @@ function checkAvailability() {
         console.log("-------key------", key);
         console.log("-------key[0]------", key[0]);
         var resButton = $("#res-btn-template").clone().removeAttr("id").html(moment(reservation.time, "HHmm").format("h:mm A"));
+        resButton.attr("data-location-time", key);
         if (key[0] === "i"){
-          $("#inside-results").append(resButton); //.attr("data-location-time", key);
+          $("#inside-results").append(resButton);
         } else {
-          $("#outside-results").append(resButton).attr("data-location-time", key);
+          $("#outside-results").append(resButton);
         }
       }
     }
 
     buildResSelectionDiv();
+
+    $(".reservation-option-btn").on("click", function(event){
+      $(".reservation-option-btn").removeClass("active");
+      $(this).addClass("active");
+      var key = event.target.dataset.locationTime;
+      localStorage.setItem("selectedReservation", JSON.stringify(reservationOptions[key]));
+    });
+
+
+    $("#reservation-select-confirm-btn").on("click", function(event){
+      
+    });
+
   });
 
 }
