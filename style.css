@@ -40,3 +40,6 @@ header .nav{
   border: solid 2px #272727;
 }
 
+#res-btn-template{
+  display: none !important;
+}
