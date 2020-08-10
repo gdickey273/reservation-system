@@ -13,37 +13,38 @@ var insideTables = [
     tableNumber: "2",
     capacity: 2,
     reservations: []
-  },
-  {
-    tableNumber: "3",
-    capacity: 4,
-    reservations: []
-  },
-  {
-    tableNumber: "4",
-    capacity: 4,
-    reservations: []
-  },
-  {
-    tableNumber: "5",
-    capacity: 6,
-    reservations: []
-  },
-  {
-    tableNumber: "6",
-    capacity: 4,
-    reservations: []
-  },
-  {
-    tableNumber: "7",
-    capacity: 4,
-    reservations: []
-  },
-  {
-    tableNumber: "8",
-    capacity: 6,
-    reservations: []
   }
+  // ,
+  // {
+  //   tableNumber: "3",
+  //   capacity: 4,
+  //   reservations: []
+  // },
+  // {
+  //   tableNumber: "4",
+  //   capacity: 4,
+  //   reservations: []
+  // },
+  // {
+  //   tableNumber: "5",
+  //   capacity: 6,
+  //   reservations: []
+  // },
+  // {
+  //   tableNumber: "6",
+  //   capacity: 4,
+  //   reservations: []
+  // },
+  // {
+  //   tableNumber: "7",
+  //   capacity: 4,
+  //   reservations: []
+  // },
+  // {
+  //   tableNumber: "8",
+  //   capacity: 6,
+  //   reservations: []
+  //}
 ]
 var outsideTables = [
   {
@@ -83,6 +84,7 @@ var latestResTime = "";
 var dataObj;
 var deferredArray = [];
 var deferred;
+var reservationOptions = {};
 
 var cloud = firebase.firestore();
 
@@ -109,16 +111,16 @@ function updateOperatingHours() {
   switch (dayOfWeek) {
     case 0:
     case 6:
-      earliestResTime = moment("10:00", "HH:mm");
-      latestResTime = moment("20:00", "HH:mm");
+      earliestResTime = moment("1000", "hhmm");
+      latestResTime = moment("2000", "hhmm");
       break;
 
     case 2:
     case 3:
     case 4:
     case 5:
-      earliestResTime = moment("16:00", "HH:mm");
-      latestResTime = moment("19:30", "HH:mm");
+      earliestResTime = moment("1600", "hhmm");
+      latestResTime = moment("1930", "hhmm");
   }
 }
 
@@ -160,15 +162,14 @@ $("#date").change(function () {
 
 //Saves time to time var when time field is changed
 $(".timepicker").change(function () {
-  // var strArray = $(this).val().split(" ");
-  // var isPM = strArray[3] === "PM";
-  // var hour = strArray[0];
-  // if (isPM && hour < 12){
-  //   hour = "" + parseInt(hour) + 12;
-  // }
-  // var minute = strArray[2];
-  // time = moment().set("hour", hour).set("minute", minute).set("second", 0);
-  time = moment($(this).val(), "h:mm A");
+  var strArray = $(this).val().split(" ");
+  var isPM = strArray[3] === "PM";
+  var hour = strArray[0];
+  if (isPM && hour < 12){
+    hour = parseInt(hour) + 12;
+  }
+  var minute = strArray[2];
+  time = moment(hour + minute, "hhmm");
 });
 
 //Saves party number to variable when party number button is clicked
@@ -261,6 +262,8 @@ function findTable(tableArray, time){
 
     //If a table doesn't have any reservations update bestOption and return it
     if(table.reservations.length === 0 && emptySeats >= 0){
+      console.log("------time when no reservations at table-----", time);
+      console.log("----same time but formatted-----", time.format("hhmm"));
       bestOption = {tableNumber : table.tableNumber,
         time: time.format("hhmm"),
         deadTime: time.diff( earliestResTime, "minutes"),
@@ -428,11 +431,12 @@ function findTable(tableArray, time){
 //TIME.SUBTRACT ISNT WORKING PROPERLY
 function findTableBefore(tableArray, time){
   var bestOptionBefore = undefined;
-  var timeIterator = time.subtract(15, "minutes");
+  var timeIterator = moment(time);
+  timeIterator.subtract(15, "minutes");
 
   while(bestOptionBefore === undefined){
     bestOptionBefore = findTable(tableArray, timeIterator);
-    timeIterator = timeIterator.subtract(15, "minutes");
+    timeIterator.subtract(15, "minutes");
     if (timeIterator.isBefore(earliestResTime)){
       return undefined;
     }
@@ -443,11 +447,12 @@ function findTableBefore(tableArray, time){
 
 function findTableAfter(tableArray, time){
   var bestOptionAfter = undefined;
-  var timeIterator = time.add(15, "minutes");
+  var timeIterator = moment(time);
+  timeIterator.add(15, "minutes");
 
   while(bestOptionAfter === undefined){
     bestOptionAfter = findTable(tableArray, timeIterator);
-    timeIterator = timeIterator.add(15, "minutes");
+    timeIterator.add(15, "minutes");
     if (timeIterator.isAfter(latestResTime)){
       return undefined;
     }
@@ -487,13 +492,14 @@ function findTableAfter(tableArray, time){
 // }
 
 function checkAvailability() {
+  reservationOptions = {};
   $("#reservation-selection-div").css("display", "block");
 $.when.apply($, deferredArray).done(function(){
-  var reservationOptions = {};
-  reservationOptions["i" + time.format("hhmm")] = findTable(insideTables, time);
+  var targetTimeOption = findTable(insideTables, time);
+   
    
 
-  if (reservationOptions["i" + time.format("hhmm")] === undefined){
+  if (targetTimeOption === undefined){
     var insideBefore = findTableBefore(insideTables, time);
     if (insideBefore !== undefined){
       reservationOptions["i" + insideBefore.time] = insideBefore;
@@ -505,8 +511,9 @@ $.when.apply($, deferredArray).done(function(){
     }
 
   } else{
+    reservationOptions["i" + time.format("hhmm")] = targetTimeOption;
     var insideResultsHeader = $("<p>").html("We have an available table inside that meets your request! <br> Click below to continue.");
-    $(".reservation-option-btn").html(time.format("h:mm A")).attr("data-location-time", "i" + time.format("hhmm"));
+    var resButton = $(".reservation-option-btn").html(time.format("h:mm A")).attr("data-location-time", "i" + time.format("hhmm"));
     
     $("#inside-results").prepend(insideResultsHeader, resButton);
   }
@@ -514,9 +521,10 @@ $.when.apply($, deferredArray).done(function(){
  
 
 
-
-
-  reservationOptions["o" + time.format("hhmm")] = findTable(outsideTables, time);
+console.log("----time before outside table search------", time);
+var outTable = findTable(outsideTables, time);
+console.log("------found table outside at 7:00----- ", outTable);
+  reservationOptions["o" + time.format("hhmm")] = outTable;
 
   if (reservationOptions["o" + time.format("hhmm")] === undefined){
     var outsideBefore = findTableBefore(outsideTables, time);
@@ -547,18 +555,18 @@ $.when.apply($, deferredArray).done(function(){
 
 
 
-//push to existing nexted array
-  // cloud.doc("scheduleByDate/08112020/insideTables/3").update({
+// push to existing nexted array
+  // cloud.doc("scheduleByDate/08112020/insideTables/2").update({
 
   //   reservations: 
   //   firebase.firestore.FieldValue.arrayUnion(
-  //     {time: "6:30:00pm",
+  //     {time: "7:00:00pm",
   //     firstName: "Betsy",
   //   secondName: "Sith",
   //   partyNumber: 1,
   //   phone: 999990234234,
   //   email: "betsyismyname@gmail.com",
-  //   tableNumber: 3})
+  //   tableNumber: 2})
   // });
 
  
