@@ -2,8 +2,10 @@ const reservationData = JSON.parse(localStorage.getItem("selectedReservation"));
 const partyNumber = reservationData.partyNumber;
 const time = moment(reservationData.time, "HHmm").format("h:mm A");
 const date = reservationData.date;
+var formattedDate = date.replace("/", "").replace("/", "");
 const tableNumber = reservationData.tableNumber;
 const isInside = tableNumber < 100;
+let insideOutside;
 let dayOfWeek = reservationData.dayOfWeek;
 let firstName;
 let lastName;
@@ -12,6 +14,9 @@ let emailAddress;
 
 var cloud = firebase.firestore();
 
+if (isInside){
+  insideOutside = "insideTables";
+} else insideOutside = "outsideTables";
 
 
 switch (dayOfWeek){
@@ -41,10 +46,13 @@ switch (dayOfWeek){
 
 function updatePage(){
   $("#header").html("Please enter your information below to confirm your reservation for " + partyNumber + " on " + dayOfWeek + ", " + date +" at " + time);
-  var formattedDate = date.replace("/", "").replace("/", "");
-  var ref = cloud.collection("scheduleByDate").doc(formattedDate);
+  
+  var path = "scheduleByDate/" + formattedDate + "/" + insideOutside + "/" + tableNumber;
+  var ref = cloud.doc(path); //.doc(formattedDate);
   ref.get().then(function(snapshot){
+    console.log("--------snapshot!-----", snapshot);
     if (snapshot.exists){
+      console.log("-----already exists! No sweat bby------");
 
     } else {
       console.log("------starting batch------");
@@ -76,8 +84,27 @@ function updatePage(){
 
 
 function makeReservation(){
+  console.log("----making reservation!----");
+  var path = "scheduleByDate/" + formattedDate + "/" + insideOutside + "/" + tableNumber;
+  cloud.doc(path).update({
 
+    reservations: 
+    firebase.firestore.FieldValue.arrayUnion(
+      {time,
+      firstName: "Betsy",
+    lastName: "Sith",
+    partyNumber,
+    phone: 999990234234,
+    email: "betsyismyname@gmail.com",
+    tableNumber})
+  });
 }
 
+$("#submit-btn").on("click", function(event){
+  event.preventDefault();
+  makeReservation();
+});
+
 updatePage();
+
 
