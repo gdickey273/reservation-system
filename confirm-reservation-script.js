@@ -82,6 +82,82 @@ function updatePage(){
 }
 
 
+function checkInputValidity(){
+  let isValid = true;
+  let firstNameInputVal = $("#first-name").val().toUpperCase();
+  let lastNameInputVal = $("#last-name").val().toUpperCase();
+  let phoneNumberInputVal = $("#phone").val().replace("(", "").replace(")", "").replace("-", "").split(" ").join("");
+  let emailAddressInputVal = $("#email").val();
+  console.log(phoneNumberInputVal);
+  console.log(phoneNumberInputVal.length);
+
+  let validNameChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let validNumberChars = "0123456789";
+
+  $(".error-message").empty();
+
+
+  //Checks for empty inputs
+  $("form#reservation-data-form :input").each(function(input){
+    if($(this).val() === ""){
+      var id = "#" + $(this).attr("id")+"-error-message";
+      $(id).html("Field cannot be left blank!");
+      isValid = false;
+      console.log("empty input! isValid: " + isValid);
+    }
+  });
+
+
+  for (let char of firstNameInputVal){
+    if (validNameChars.indexOf(char) === -1){
+      isValid = false;
+      $("#first-name-error-message").html('Invalid character. Please use only letters a-z');
+      break;
+    }
+  }
+  
+  validNameChars += "-";
+  for (let char of lastNameInputVal){
+    if (validNameChars.indexOf(char) === -1){
+      isValid = false;
+      $("#last-name-error-message").html('Invalid character. Please use only letters a-z (or "-" in case of a hyphonated last name)');
+      break;
+    }
+  }
+
+  for(let char of phoneNumberInputVal){
+    if (validNumberChars.indexOf(char) === -1){
+      isValid = false;
+      $("#phone-error-message").html('Invalid character. Please use only numbers 0-9, "()", and "-" ')
+      break;
+    }
+  }
+
+
+  switch (phoneNumberInputVal.length){
+    case 7:
+      isValid = false;
+      $("#phone-error-message").html("Please enter your area code as well.");
+      break;
+    case 10:
+      isValid = true;
+      break;
+    default:
+      isValid = false;
+      $("#phone-error-message").html("Invalid number! Please enter a 10 digit phone number");
+  }
+  
+
+  if (isValid){
+    firstName = firstNameInputVal;
+    lastName = lastNameInputVal;
+    phoneNumber = phoneNumberInputVal;
+    emailAddress = emailAddressInputVal;
+  } 
+
+  return isValid;
+
+}
 
 function makeReservation(){
   console.log("----making reservation!----");
@@ -91,18 +167,24 @@ function makeReservation(){
     reservations: 
     firebase.firestore.FieldValue.arrayUnion(
       {time,
-      firstName: "Betsy",
-    lastName: "Sith",
+      firstName,
+    lastName,
     partyNumber,
-    phone: 999990234234,
-    email: "betsyismyname@gmail.com",
+    phoneNumber,
+    emailAddress,
     tableNumber})
   });
+
 }
+
 
 $("#submit-btn").on("click", function(event){
   event.preventDefault();
-  makeReservation();
+  if (checkInputValidity()){
+    makeReservation();
+  }
+
+  
 });
 
 updatePage();
