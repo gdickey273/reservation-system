@@ -204,7 +204,7 @@ function initializeTables() {
       if (data != undefined && data.reservations != undefined) {
 
         data.reservations.forEach(function (resObj) {
-          resObj.time = moment(resObj.time, "h:mm A");
+          resObj.time = moment(resObj.time, "HHmm");
           table.reservations.push(resObj);
         })
       }
