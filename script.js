@@ -163,14 +163,15 @@ $("#date").change(function () {
 
 //Saves time to time var when time field is changed
 $(".timepicker").change(function () {
-  var strArray = $(this).val().split(" ");
-  var isPM = strArray[3] === "PM";
-  var hour = strArray[0];
-  if (isPM && hour < 12) {
-    hour = parseInt(hour) + 12;
-  }
-  var minute = strArray[2];
-  time = moment(hour + minute, "HHmm");
+  // var strArray = $(this).val().split(" ");
+  // var isPM = strArray[3] === "PM";
+  // var hour = strArray[0];
+  // if (isPM && hour < 12) {
+  //   hour = parseInt(hour) + 12;
+  // }
+  // var minute = strArray[2];
+  // time = moment(hour + minute, "HHmm");
+  time = moment($(this).val(), "h:mm A");
 });
 
 //Saves party number to variable when party number button is clicked
@@ -204,8 +205,11 @@ function initializeTables() {
       if (data != undefined && data.reservations != undefined) {
 
         data.reservations.forEach(function (resObj) {
-          resObj.time = moment(resObj.time, "HHmm");
+          resObj.time = moment(resObj.time, "h:mm A");
+          console.log("-------resTime-------", resObj.time.format("h:mm A"));
+          console.log("-----same time, different format-----", resObj.time.format("HHmm"));
           table.reservations.push(resObj);
+      
         })
       }
 
@@ -236,16 +240,11 @@ function initializeTables() {
 }
 
 function findTable(tableArray, time) {
-  console.log("party number find table------", partyNumber);
   var emptySeats;
   var deadTime = 999;
   var bestOption = { deadTime: deadTime};
 
   for (let table of tableArray) {
-    console.log("-----next table------");
-    console.log("table: ", table);
-    console.log("table reservations: ", table.reservations);
-
 
     tableRes = table.reservations;
     emptySeats = table.capacity - partyNumber;
@@ -253,6 +252,7 @@ function findTable(tableArray, time) {
     //Dont consider 6 tops for 1 or 2 people. Return bestOption so far if it exists, otherwise return undefined to look for a different time
     if (emptySeats > 3) {
       if (bestOption.tableNumber === undefined) {
+        console.log("--------emptySeats > 3 and no best option yet. return undefined------");
         return undefined;
       } else {
         console.log("----Starting to look at tables too large for party! Return: best option-----");
@@ -263,8 +263,6 @@ function findTable(tableArray, time) {
 
     //If a table doesn't have any reservations update bestOption and return it
     if (table.reservations.length === 0 && emptySeats >= 0) {
-      console.log("------time when no reservations at table-----", time);
-      console.log("----same time but formatted-----", time.format("HHmm"));
       bestOption = {
         tableNumber: table.tableNumber,
         time: time.format("HHmm"),
@@ -280,7 +278,7 @@ function findTable(tableArray, time) {
 
       //for each reservation in table
       for (let [i, reservation] of table.reservations.entries()) {
-        console.log("-----next reseravtion-----")
+      
         //if table isnt big enough for party, skip to next table
         if (emptySeats < 0) {
           break;
@@ -332,7 +330,7 @@ function findTable(tableArray, time) {
               date: selectedDate.format("MM/DD/YYYY"),
               dayOfWeek
               };
-              console.log("-----best option-----" + JSON.stringify(bestOption));
+    
               if (deadTime === 0 && i === table.reservations.length - 1) {
                 console.log("----no dead time at table and is last res at table! Return: best option-----");
                 return bestOption;
@@ -346,8 +344,15 @@ function findTable(tableArray, time) {
     }
 
   };
-
-  return undefined;
+  // console.log("-------end of the line!------");
+  // if(bestOption.deadTime === 999){
+  //   console.log("-----return undefined------");
+  //   return undefined;
+  // } else {
+  //   console.log("-----return best option-----");
+  //   return bestOption;
+  // } 
+ return undefined;
 }
 
 
@@ -356,12 +361,22 @@ function findTableBefore(tableArray, time) {
   var timeIterator = moment(time);
   timeIterator.subtract(15, "minutes");
 
-  while (bestOptionBefore === undefined) {
+  while (!timeIterator.isBefore(earliestResTime)) {
+    console.log("------bestOptionBefore: " + JSON.stringify(bestOptionBefore));
+    
     bestOptionBefore = findTable(tableArray, timeIterator);
-    timeIterator.subtract(15, "minutes");
-    if (timeIterator.isBefore(earliestResTime)) {
+    console.log("-----now we're after findTable()--------");
+
+    if(bestOptionBefore != undefined){
       return bestOptionBefore;
     }
+    
+    console.log(timeIterator.format("HHmm"));
+    timeIterator.subtract(15, "minutes");
+    
+    // if (timeIterator.isBefore(earliestResTime)) {
+    //   return bestOptionBefore;
+    // }
   }
 
   return bestOptionBefore;
