@@ -13,39 +13,41 @@ var insideTables = [
     tableNumber: "2",
     capacity: 2,
     reservations: []
+  },
+  {
+    tableNumber: "3",
+    capacity: 4,
+    reservations: []
   }
-  // ,
-  // {
-  //   tableNumber: "3",
-  //   capacity: 4,
-  //   reservations: []
-  // },
-  // {
-  //   tableNumber: "4",
-  //   capacity: 4,
-  //   reservations: []
-  // },
-  // {
-  //   tableNumber: "5",
-  //   capacity: 6,
-  //   reservations: []
-  // },
-  // {
-  //   tableNumber: "6",
-  //   capacity: 4,
-  //   reservations: []
-  // },
-  // {
-  //   tableNumber: "7",
-  //   capacity: 4,
-  //   reservations: []
-  // },
-  // {
-  //   tableNumber: "8",
-  //   capacity: 6,
-  //   reservations: []
-  //}
-]
+  ,
+  {
+    tableNumber: "4",
+    capacity: 4,
+    reservations: []
+  },
+  {
+    tableNumber: "6",
+    capacity: 4,
+    reservations: []
+  },
+  {
+    tableNumber: "7",
+    capacity: 4,
+    reservations: []
+  },
+  {
+    tableNumber: "5",
+    capacity: 6,
+    reservations: []
+  },
+  {
+    tableNumber: "8",
+    capacity: 6,
+    reservations: []
+  }
+ 
+];
+
 var outsideTables = [
   {
     tableNumber: "100",
@@ -67,7 +69,9 @@ var outsideTables = [
     capacity: 6,
     reservations: []
   }
-]
+];
+
+var lowTopTables = [];
 
 //var for testing
 var tableRes;
@@ -89,6 +93,8 @@ var targetIsAvailableInside = false;
 var alternativeIsAvalableInside = false;
 var targetIsAvailableOutside = false;
 var alternativeIsAvailableOutside = false;
+var targetIsAvailableHighTop = false;
+var alternativeIsAvailableHighTop = false;
 
 var cloud = firebase.firestore();
 
@@ -236,7 +242,8 @@ function initializeTables() {
 
   });
 
-
+  lowTopTables = _.clone(insideTables);
+  lowTopTables.pop();
 }
 
 function findTable(tableArray, time) {
@@ -278,7 +285,9 @@ function findTable(tableArray, time) {
 
       //for each reservation in table
       for (let [i, reservation] of table.reservations.entries()) {
-      
+        console.log("........we're looking at table: " + table.tableNumber + "........");
+        var resTime = moment(reservation.time, "h:mm A");
+        console.log(time.format("HHmm") + "++++++++++++++++++" + resTime.format("HHmm"));
         //if table isnt big enough for party, skip to next table
         if (emptySeats < 0) {
           break;
@@ -305,17 +314,22 @@ function findTable(tableArray, time) {
               };
 
             }
-            if (bestOption.deadTime === 0) {
-              console.log("----dead time = 0! Return: best option-----");
+            if (bestOption.deadTime === 0 && i === table.reservations.length - 1) {
+              console.log("----dead time = 0! Return: best option----- resTime: ", reservation.time);
               return bestOption;
             }
 
           }
 
           //if target time is after existing res time, make sure theres 90 minute buffer. If not, look at next table. If 90 minutes buffer, set dead time and look at next reservation to ensure theres enough buffer there.
+        } else if(time.isSame(reservation.time)){
+          console.log("time is same as current res time! break------- table number: ", table.tableNumber);
+          break;
+
         } else if (time.isAfter(reservation.time)) {
           if (time.diff(reservation.time, "minutes") >= 90) {
             deadTime = time.diff(reservation.time, "minutes") - 90;
+            console.log("----------table number--------",table.tableNumber)
             console.log("Dead time: " + deadTime);
             console.log("------best option dead time-----" + bestOption.deadTime);
             if (deadTime < bestOption.deadTime) {
@@ -368,6 +382,7 @@ function findTableBefore(tableArray, time) {
     console.log("-----now we're after findTable()--------");
 
     if(bestOptionBefore != undefined){
+      console.log("returning bestOptionBefore!!!!!!!!", bestOptionBefore.tableNumber, bestOptionBefore.time);
       return bestOptionBefore;
     }
     
@@ -415,23 +430,74 @@ function checkAvailability() {
 
       //find before and store if found
       var insideBefore = findTableBefore(insideTables, time);
+      
       if (insideBefore !== undefined) {
-        alternativeIsAvalableInside = true;
-        reservationOptions["i" + insideBefore.time] = insideBefore;
+
+        //if table found is table 8 save option as h + time in reservationOptions[] and look for inside lowtop table
+        if(insideBefore.tableNumber === "8"){
+    
+          reservationOptions["h" + insideBefore.time] = insideBefore;
+          var lowTopBefore = findTableBefore(lowTopTables, time);
+          if (lowTopBefore !== undefined){
+            alternativeIsAvalableInside = true;
+            reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
+          }
+
+        } else {
+          alternativeIsAvalableInside = true;
+          reservationOptions["i" + insideBefore.time] = insideBefore;
+        }
+        
       }
 
       //find after and store if found
       var insideAfter = findTableAfter(insideTables, time);
-      console.log("------insideAfter result------", insideAfter);
+
       if (insideAfter !== undefined) {
-        alternativeIsAvalableInside = true;
-        reservationOptions["i" + insideAfter.time] = insideAfter;
+        if(insideAfter.tableNumber === "8"){
+
+          reservationOptions["h" + insideAfter.time] = insideAfter;
+          var lowTopAfter = findTableAfter(lowTopTables, time);
+          if (lowTopAfter !== undefined){
+            alternativeIsAvalableInside = true;
+            reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
+          }
+
+        } else {
+          alternativeIsAvalableInside = true;
+          reservationOptions["i" + insideAfter.time] = insideAfter;
+        }
+        
       }
 
       //if table is available at target time, set targetAvailableInside = true
     } else {
-      targetIsAvailableInside = true;
-      reservationOptions["i" + time.format("HHmm")] = targetTimeOption;
+      if (targetTimeOption.tableNumber === "8"){
+        targetIsAvailableHighTop = true;
+        reservationOptions["h" + time.format("HHmm")] = targetTimeOption;
+        var lowTopTarget = findTable(lowTopTables, time);
+        if (lowTopTarget !== undefined){
+          targetIsAvailableInside = true;
+          reservationOptions["i" + time.format("HHmm")] = lowTopTarget;
+        } else {
+          var lowTopBefore = findTableBefore(lowTopTables, time);
+          if (lowTopBefore !== undefined){
+            alternativeIsAvalableInside = true;
+            reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
+          }
+
+          var lowTopAfter = findTableAfter(lowTopTables, time);
+          if (lowTopAfter !== undefined){
+            alternativeIsAvalableInside = true;
+            reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
+          }
+
+        }
+      }else {
+        targetIsAvailableInside = true;
+        reservationOptions["i" + time.format("HHmm")] = targetTimeOption;
+      }
+      
       // var insideResultsHeader = $("<p>").html("We have an available table inside that meets your request! <br> Click below to continue.");
       // var resButton = $(".reservation-option-btn").html(time.format("h:mm A")).attr("data-location-time", "i" + time.format("HHmm"));
       // $("#inside-results").prepend(insideResultsHeader, resButton);
@@ -474,11 +540,13 @@ function checkAvailability() {
       var resultsHeader = $("<h5>").attr("id", "results-header");
       var insideHeader = $("<p>").html("Inside");
       var outsideHeader = $("<p>").html("Outside");
+      var highTopHeader = $("<p>").html("High-Top Table with Barstools");
       
 
       
       $("#inside-results").empty().append(insideHeader);
       $("#outside-results").empty().append(outsideHeader);
+      $("#high-top-results").empty().append(highTopHeader);
 
 
 
@@ -521,8 +589,10 @@ function checkAvailability() {
         resButton.attr("data-location-time", key);
         if (key[0] === "i"){
           $("#inside-results").append(resButton);
-        } else {
+        } else if (key[0] === "o"){
           $("#outside-results").append(resButton);
+        } else { 
+          $("#high-top-results").append(resButton);
         }
       }
     }
