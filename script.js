@@ -84,6 +84,7 @@ var resCount = {};
 var partyNumber = 1;
 var selectedDate = undefined;
 var dayOfWeek;
+var dayOfWeekName;
 var time;
 var earliestResTime = "";
 var latestResTime = "";
@@ -120,22 +121,43 @@ $(document).ready(function () {
 
 //Looks at the dayOfWeek variable and updates earliest and latest reservation time to match that day's business hours
 function updateOperatingHours() {
-  switch (dayOfWeek) {
+  switch (dayOfWeek){
     case 0:
+      earliestResTime = moment("1000", "HHmm");
+      latestResTime = moment("2000", "HHmm");
+      dayOfWeekName = "Sunday";
+      break;
+    case 1: 
+      dayOfWeekName = "Monday";
+      break;
+    case 2: 
+      dayOfWeekName = "Tuesday";
+      earliestResTime = moment("1600", "HHmm");
+      latestResTime = moment("1930", "HHmm");
+      break;
+    case 3: 
+      dayOfWeekName = "Wednesday";
+      earliestResTime = moment("1600", "HHmm");
+      latestResTime = moment("1930", "HHmm");
+      break;
+    case 4: 
+      dayOfWeekName = "Thursday";
+      earliestResTime = moment("1600", "HHmm");
+      latestResTime = moment("1930", "HHmm");
+      break;
+    case 5: 
+      dayOfWeekName = "Friday";
+      earliestResTime = moment("1600", "HHmm");
+      latestResTime = moment("1930", "HHmm");
+      break;
     case 6:
       earliestResTime = moment("1000", "HHmm");
       latestResTime = moment("2000", "HHmm");
+      dayOfWeekName = "Saturday";
       break;
-
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-
-      //CHANGE LATEST RES TIME TO 1930 WHEN TESTING IS DONE
-      earliestResTime = moment("1600", "HHmm");
-      latestResTime = moment("2030", "HHmm");
+  
   }
+  
 
   var timeIterator = moment(earliestResTime);
   while(timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)){
@@ -203,7 +225,19 @@ $(".partyNumberButton").on("click", function () {
 
 $("#submit-button").click(function (event) {
   event.preventDefault();
-  checkAvailability();
+  $(".error-message").empty();
+  $("#reservation-selection-div").css("display","none");
+  if(isValidTime()){
+    checkAvailability();
+  } else if(dayOfWeek === 1){
+    console.log("should be changing text!");
+    $("#date-error-message").text("We're closed on Mondays! Please choose another day");
+  } else if(time.isBefore(earliestResTime)){
+    $("#time-error-message").text("We don't open until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
+  } else {
+    $("#time-error-message").text("We stop taking reservations at " + latestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
+  }
+  
 });
 
 //For each table object in inside/outside table array, pull reservation data from cloud and push to table object's reservation array

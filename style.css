@@ -44,3 +44,8 @@ header .nav{
 #res-btn-template{
   display: none !important;
 }
+
+.error-message{
+  font-size: 14px;
+  color: darkred;
+}
