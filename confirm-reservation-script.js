@@ -1,6 +1,6 @@
 const reservationData = JSON.parse(localStorage.getItem("selectedReservation"));
 const partyNumber = reservationData.partyNumber;
-const time = moment(reservationData.time, "HHmm").format("h:mm A");
+const time = moment(reservationData.time, "HHmm");
 const date = reservationData.date;
 var formattedDate = date.replace("/", "").replace("/", "");
 const tableNumber = reservationData.tableNumber;
@@ -45,7 +45,7 @@ switch (dayOfWeek){
 }
 
 function updatePage(){
-  $("#header").html("Please enter your information below to confirm your reservation for " + partyNumber + " on " + dayOfWeek + ", " + date +" at " + time);
+  $("#header").html("Please enter your information below to confirm your reservation for " + partyNumber + " on " + dayOfWeek + ", " + date +" at " + time.format("h:mm A"));
   
   var path = "scheduleByDate/" + formattedDate + "/" + insideOutside + "/" + tableNumber;
   var ref = cloud.doc(path); //.doc(formattedDate);
@@ -166,7 +166,7 @@ function makeReservation(){
 
     reservations: 
     firebase.firestore.FieldValue.arrayUnion(
-      {time,
+      {time: parseInt(time.format("HHmm")),
       firstName,
     lastName,
     partyNumber,

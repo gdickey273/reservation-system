@@ -16,12 +16,13 @@ header .nav{
   display: none;
 }
 
-#inside-results{
+.results{
   border: 4px solid #043c5b;
+  padding: 10px;
 }
 
-#outside-results{
-  border: 4px solid #043c5b;
+#high-top-results{
+  display: none;
 }
 
 .btn-primary{

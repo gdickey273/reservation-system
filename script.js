@@ -209,9 +209,10 @@ function initializeTables() {
       var data = doc.data();
       table.reservations = [];
       if (data != undefined && data.reservations != undefined) {
+        var orderedResArray = _.sortBy(data.reservations, "time");
 
-        data.reservations.forEach(function (resObj) {
-          resObj.time = moment(resObj.time, "h:mm A");
+        orderedResArray.forEach(function (resObj) {
+          resObj.time = moment(resObj.time, "HHmm");
           console.log("-------resTime-------", resObj.time.format("h:mm A"));
           console.log("-----same time, different format-----", resObj.time.format("HHmm"));
           table.reservations.push(resObj);
@@ -231,8 +232,10 @@ function initializeTables() {
       var data = doc.data();
 
       if (data != undefined && data.reservations != undefined) {
+        var orderedResArray = _.sortBy(data.reservations, "time");
 
-        data.reservations.forEach(function (resObj) {
+        orderedResArray.forEach(function (resObj) {
+          resObj.time = moment(resObj.time, "HHmm");
           table.reservations.push(resObj);
         })
       }
@@ -252,7 +255,8 @@ function findTable(tableArray, time) {
   var bestOption = { deadTime: deadTime};
 
   for (let table of tableArray) {
-
+    var bestTableOption = {deadTime : 999};
+    var isConflictingRes = false;
     tableRes = table.reservations;
     emptySeats = table.capacity - partyNumber;
 
@@ -266,6 +270,8 @@ function findTable(tableArray, time) {
         return bestOption;
       }
     }
+
+    
 
 
     //If a table doesn't have any reservations update bestOption and return it
@@ -288,22 +294,20 @@ function findTable(tableArray, time) {
         console.log("........we're looking at table: " + table.tableNumber + "........");
         var resTime = moment(reservation.time, "h:mm A");
         console.log(time.format("HHmm") + "++++++++++++++++++" + resTime.format("HHmm"));
-        //if table isnt big enough for party, skip to next table
-        if (emptySeats < 0) {
-          break;
-        }
+       
 
 
         //If target time is before existing res time, make sure there's 90 minute buffer. If not break and don't consider that table.
         //If theres more than 90 minutes buffer set dead time to difference - 90
         if (time.isBefore(reservation.time)) {
           if (reservation.time.diff(time, "minutes") < 90) {
+            isConflictingRes = true;
             break;
           } else {
             deadTime = reservation.time.diff(time, "minutes") - 90;
             console.log("Dead time: " + deadTime);
-            if (deadTime < bestOption.deadTime) {
-              bestOption = {
+            if (deadTime < bestTableOption.deadTime) {
+              bestTableOption = {
                 tableNumber: table.tableNumber,
                 time: time.format("HHmm"),
                 deadTime,
@@ -314,15 +318,16 @@ function findTable(tableArray, time) {
               };
 
             }
-            if (bestOption.deadTime === 0 && i === table.reservations.length - 1) {
-              console.log("----dead time = 0! Return: best option----- resTime: ", reservation.time);
-              return bestOption;
-            }
+            // if (bestOption.deadTime === 0 && i === table.reservations.length - 1) {
+            //   console.log("----dead time = 0! Return: best option----- resTime: ", reservation.time);
+            //   return bestOption;
+            // }
 
           }
 
           //if target time is after existing res time, make sure theres 90 minute buffer. If not, look at next table. If 90 minutes buffer, set dead time and look at next reservation to ensure theres enough buffer there.
         } else if(time.isSame(reservation.time)){
+          isConflictingRes = true;
           console.log("time is same as current res time! break------- table number: ", table.tableNumber);
           break;
 
@@ -331,10 +336,10 @@ function findTable(tableArray, time) {
             deadTime = time.diff(reservation.time, "minutes") - 90;
             console.log("----------table number--------",table.tableNumber)
             console.log("Dead time: " + deadTime);
-            console.log("------best option dead time-----" + bestOption.deadTime);
-            if (deadTime < bestOption.deadTime) {
+            console.log("------best option dead time-----" + bestTableOption.deadTime);
+            if (deadTime < bestTableOption.deadTime) {
 
-              bestOption =
+              bestTableOption =
               {
                 tableNumber: table.tableNumber,
                 time: time.format("HHmm"),
@@ -345,28 +350,31 @@ function findTable(tableArray, time) {
               dayOfWeek
               };
     
-              if (deadTime === 0 && i === table.reservations.length - 1) {
-                console.log("----no dead time at table and is last res at table! Return: best option-----");
-                return bestOption;
-              }
+              // if (deadTime === 0 && i === table.reservations.length - 1) {
+              //   console.log("----no dead time at table and is last res at table! Return: best option-----");
+              //   return bestOption;
+              // }
             }
           } else {
+            isConflictingRes = true;
             break;
           }
         }
       }
     }
-
+      if(!isConflictingRes && bestTableOption.deadTime < bestOption.deadTime){
+        bestOption = bestTableOption;
+      }
   };
-  // console.log("-------end of the line!------");
-  // if(bestOption.deadTime === 999){
-  //   console.log("-----return undefined------");
-  //   return undefined;
-  // } else {
-  //   console.log("-----return best option-----");
-  //   return bestOption;
-  // } 
- return undefined;
+  console.log("-------end of the line!------");
+  if(bestOption.deadTime === 999){
+    console.log("-----return undefined------");
+    return undefined;
+  } else {
+    console.log("-----return best option-----");
+    return bestOption;
+  } 
+//  return undefined;
 }
 
 
@@ -415,6 +423,12 @@ function findTableAfter(tableArray, time) {
 
 
 function checkAvailability() {
+  targetIsAvailableInside = false;
+  alternativeIsAvalableInside = false;
+  targetIsAvailableOutside = false;
+  alternativeIsAvailableOutside = false;
+  targetIsAvailableHighTop = false;
+  alternativeIsAvailableHighTop = false;
   reservationOptions = {};
   $("#reservation-selection-div").css("display", "block");
 
@@ -435,7 +449,7 @@ function checkAvailability() {
 
         //if table found is table 8 save option as h + time in reservationOptions[] and look for inside lowtop table
         if(insideBefore.tableNumber === "8"){
-    
+          alternativeIsAvailableHighTop = true;
           reservationOptions["h" + insideBefore.time] = insideBefore;
           var lowTopBefore = findTableBefore(lowTopTables, time);
           if (lowTopBefore !== undefined){
@@ -455,7 +469,7 @@ function checkAvailability() {
 
       if (insideAfter !== undefined) {
         if(insideAfter.tableNumber === "8"){
-
+          alternativeIsAvailableHighTop = true;
           reservationOptions["h" + insideAfter.time] = insideAfter;
           var lowTopAfter = findTableAfter(lowTopTables, time);
           if (lowTopAfter !== undefined){
@@ -547,7 +561,9 @@ function checkAvailability() {
       $("#inside-results").empty().append(insideHeader);
       $("#outside-results").empty().append(outsideHeader);
       $("#high-top-results").empty().append(highTopHeader);
-
+      if(alternativeIsAvailableHighTop || targetIsAvailableHighTop){
+        $("#high-top-results").css("display", "block");
+      } else $("#high-top-results").css("display", "none");
 
 
       if(targetIsAvailableInside){
