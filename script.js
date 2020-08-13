@@ -534,8 +534,10 @@ function checkAvailability() {
 
 
     //look for table outside at target time
-    targetTimeOption = findTable(outsideTables, time);
-
+    targetTimeOption = undefined;
+    if(resCount[time.format("HHmm")] < 3){
+      targetTimeOption = findTable(insideTables, time);
+    }
 
     //if no table available at target time, look for available table before and after
     if (targetTimeOption === undefined) {
