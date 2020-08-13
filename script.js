@@ -76,6 +76,8 @@ var lowTopTables = [];
 //var for testing
 var tableRes;
 
+var resCount = {};
+
 
 
 //party number and time initialized for ease of testing
@@ -133,6 +135,12 @@ function updateOperatingHours() {
       //CHANGE LATEST RES TIME TO 1930 WHEN TESTING IS DONE
       earliestResTime = moment("1600", "HHmm");
       latestResTime = moment("2030", "HHmm");
+  }
+
+  var timeIterator = moment(earliestResTime);
+  while(timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)){
+    resCount[timeIterator.format("HHmm")] = 0;
+    timeIterator.add(15, "minutes");
   }
 }
 
@@ -212,6 +220,7 @@ function initializeTables() {
         var orderedResArray = _.sortBy(data.reservations, "time");
 
         orderedResArray.forEach(function (resObj) {
+          resCount[resObj.time]++;
           resObj.time = moment(resObj.time, "HHmm");
           console.log("-------resTime-------", resObj.time.format("h:mm A"));
           console.log("-----same time, different format-----", resObj.time.format("HHmm"));
@@ -436,8 +445,12 @@ function checkAvailability() {
   $.when.apply($, deferredArray).done(function () {
 
 
-    //Look for inside table at target time
-    var targetTimeOption = findTable(insideTables, time);
+    //If resCount[time] < 3, look for inside table at target time
+    var targetTimeOption = undefined;
+    if(resCount[time.format("HHmm")] < 3){
+      targetTimeOption = findTable(insideTables, time);
+    }
+    
 
     //If there are no tables availabe inside at target time, find available time before and after
     if (targetTimeOption === undefined) {
