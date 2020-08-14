@@ -1,4 +1,4 @@
-const reservationData = JSON.parse(localStorage.getItem("selectedReservation"));
+let reservationData = JSON.parse(localStorage.getItem("selectedReservation"));
 const partyNumber = reservationData.partyNumber;
 const time = moment(reservationData.time, "HHmm");
 const date = reservationData.date;
@@ -162,18 +162,34 @@ function checkInputValidity(){
 function makeReservation(){
   console.log("----making reservation!----");
   var path = "scheduleByDate/" + formattedDate + "/" + insideOutside + "/" + tableNumber;
+  reservationData = {time: parseInt(time.format("HHmm")),
+  firstName,
+lastName,
+partyNumber,
+phoneNumber,
+emailAddress,
+tableNumber};
+
   cloud.doc(path).update({
 
     reservations: 
-    firebase.firestore.FieldValue.arrayUnion(
-      {time: parseInt(time.format("HHmm")),
-      firstName,
-    lastName,
-    partyNumber,
-    phoneNumber,
-    emailAddress,
-    tableNumber})
+    firebase.firestore.FieldValue.arrayUnion(reservationData)
+  }).then(() => {
+    reservationData.dayOfWeek = dayOfWeek;
+    reservationData.date = date;
+    localStorage.setItem("confirmedReservation", JSON.stringify(reservationData));
+    window.location.href = "confirmation.html";
+    // cloud.collection('mail').add({
+    //   to: 'gdickey273@gmail.com',
+    //   message: {
+    //     subject: 'Hello from Firebase!',
+    //     text: 'This is the plaintext section of the email body.',
+    //     html: 'This is the <code>HTML</code> section of the email body.',
+    //   }
+    // }).then(() => console.log('Queued email for delivery!'));
   });
+
+
 
 }
 

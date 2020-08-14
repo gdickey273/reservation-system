@@ -297,6 +297,10 @@ function findTable(tableArray, time) {
   var deadTime = 999;
   var bestOption = { deadTime: deadTime};
 
+  if(resCount[time.format("HHmm")] === 3){
+    return undefined;
+  }
+
   for (let table of tableArray) {
     var bestTableOption = {deadTime : 999};
     var isConflictingRes = false;
