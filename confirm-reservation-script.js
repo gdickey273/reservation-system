@@ -45,8 +45,18 @@ switch (dayOfWeek){
 }
 
 function updatePage(){
-  $("#header").html("Please enter your information below to confirm your reservation for " + partyNumber + " on " + dayOfWeek + ", " + date +" at " + time.format("h:mm A"));
+  let str;
+  if (isInside){
+    str = "Please enter your information below to confirm your reservation for " + partyNumber + " on " + dayOfWeek + ", " + date +" at " + time.format("h:mm A");
+  } else {
+    str = "Please enter your information below to confirm your patio seating reservation for " + partyNumber + " on " + dayOfWeek + ", " + date +" at " + time.format("h:mm A")+"*";
+    let outsideSeatingDisclaimer = $("<p>").html("*Please note that we cannot guarantee we'll have room to move you inside in case of rain or other foul weather!")
+    outsideSeatingDisclaimer.addClass("disclaimer");
+    $("#reservation-data-form").append(outsideSeatingDisclaimer);
+  }
+  $("#header").html(str);
   
+
   var path = "scheduleByDate/" + formattedDate + "/" + insideOutside + "/" + tableNumber;
   var ref = cloud.doc(path); //.doc(formattedDate);
   ref.get().then(function(snapshot){

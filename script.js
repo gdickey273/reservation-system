@@ -212,12 +212,19 @@ $(".timepicker").change(function () {
 
 //Saves party number to variable when party number button is clicked
 $(".partyNumberButton").on("click", function () {
+  $("#party-number-error").empty();
   $(".partyNumberButton").each(function () {
     $(this).removeClass("active");
   })
   $(this).addClass("active");
   var partyButton = $(this).children();
+  if (partyButton.attr("id") === "partyOf-7"){
+    $("#party-number-error").html("Because of our corona-virus policies, we ask that you please call us at (336) 525-2010 to make a reservation for parties of 7 or more.")
+  } 
+
   partyNumber = parseInt(partyButton.attr("id").split("-")[1]);
+  
+  
 
 
   console.log("party number in listener------", partyNumber);
@@ -227,15 +234,17 @@ $("#submit-button").click(function (event) {
   event.preventDefault();
   $(".error-message").empty();
   $("#reservation-selection-div").css("display","none");
-  if(isValidTime()){
+  if(isValidTime() && partyNumber < 7){
     checkAvailability();
   } else if(dayOfWeek === 1){
     console.log("should be changing text!");
     $("#date-error-message").text("We're closed on Mondays! Please choose another day");
   } else if(time.isBefore(earliestResTime)){
     $("#time-error-message").text("We don't open until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
-  } else {
+  } else if(time.isAfter(latestResTime)){
     $("#time-error-message").text("We stop taking reservations at " + latestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
+  } else if(partyNumber === 7){
+    $("#party-number-error").html("Because of our corona-virus policies, we ask that you please call us at (336) 525-2010 to make a reservation for parties of 7 or more.")
   }
   
 });
@@ -595,10 +604,6 @@ function checkAvailability() {
     } else {
       targetIsAvailableOutside = true;
       reservationOptions["o" + time.format("HHmm")] = targetTimeOption;
-      // var outsideResultsHeader = $("<p>").html("We have an available table outside that meets your request! <br> Click below to continue.");
-      // var resButton = $(".reservation-option-btn").clone().html(time.format("h:mm A"));
-      // resButton.attr("data-location-time", "i" + time.format("HHmm"));
-      // $("#outside-results").append(outsideResultsHeader, resButton);
     }
 
     function buildResSelectionDiv() {
@@ -607,6 +612,7 @@ function checkAvailability() {
       var resultsHeader = $("<h5>").attr("id", "results-header");
       var insideHeader = $("<p>").html("Inside");
       var outsideHeader = $("<p>").html("Outside");
+      var outsideSeatingDisclaimer = $("<p>").addClass("disclaimer").attr("id", "outside-seating-disclaimer");
       var highTopHeader = $("<p>").html("High-Top Table with Barstools");
       
 
@@ -618,6 +624,7 @@ function checkAvailability() {
         $("#high-top-results").css("display", "block");
       } else $("#high-top-results").css("display", "none");
 
+      
 
       if(targetIsAvailableInside){
         if(targetIsAvailableOutside){
@@ -664,6 +671,11 @@ function checkAvailability() {
           $("#high-top-results").append(resButton);
         }
       }
+      if(targetIsAvailableOutside || alternativeIsAvailableOutside){
+        $("#outside-results").append(outsideSeatingDisclaimer);
+        $("#outside-seating-disclaimer").html("Please note that we cannot guarantee we'll have room to move you inside in case of rain or other foul weather!")
+      }
+
     }
 
     buildResSelectionDiv();
