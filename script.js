@@ -45,7 +45,7 @@ var insideTables = [
     capacity: 6,
     reservations: []
   }
- 
+
 ];
 
 var outsideTables = [
@@ -89,8 +89,6 @@ var time;
 var earliestResTime = "";
 var latestResTime = "";
 var dataObj;
-var deferredArray = [];
-var deferred;
 var reservationOptions = {};
 var targetIsAvailableInside = false;
 var alternativeIsAvalableInside = false;
@@ -105,6 +103,8 @@ var cloud = firebase.firestore();
 
 //Something to do with the calendar widget
 $(document).ready(function () {
+  var input = $('#refresh');
+
   var date_input = $('input[name="date"]'); //our date input has the name "date"
   var container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
   date_input.datepicker({
@@ -115,37 +115,44 @@ $(document).ready(function () {
   })
 
   $('.timepicker').wickedpicker();
+});
 
-
+document.addEventListener("DOMContentLoaded", function () {
+  var refresh = $("#refresh");
+  if (refresh.val() === "yes") {
+    location.reload(true);
+  } else {
+    refresh.val("yes");
+  }
 });
 
 //Looks at the dayOfWeek variable and updates earliest and latest reservation time to match that day's business hours
 function updateOperatingHours() {
-  switch (dayOfWeek){
+  switch (dayOfWeek) {
     case 0:
       earliestResTime = moment("1000", "HHmm");
       latestResTime = moment("2000", "HHmm");
       dayOfWeekName = "Sunday";
       break;
-    case 1: 
+    case 1:
       dayOfWeekName = "Monday";
       break;
-    case 2: 
+    case 2:
       dayOfWeekName = "Tuesday";
       earliestResTime = moment("1600", "HHmm");
       latestResTime = moment("1930", "HHmm");
       break;
-    case 3: 
+    case 3:
       dayOfWeekName = "Wednesday";
       earliestResTime = moment("1600", "HHmm");
       latestResTime = moment("1930", "HHmm");
       break;
-    case 4: 
+    case 4:
       dayOfWeekName = "Thursday";
       earliestResTime = moment("1600", "HHmm");
       latestResTime = moment("1930", "HHmm");
       break;
-    case 5: 
+    case 5:
       dayOfWeekName = "Friday";
       earliestResTime = moment("1600", "HHmm");
       latestResTime = moment("1930", "HHmm");
@@ -155,12 +162,12 @@ function updateOperatingHours() {
       latestResTime = moment("2000", "HHmm");
       dayOfWeekName = "Saturday";
       break;
-  
+
   }
-  
+
 
   var timeIterator = moment(earliestResTime);
-  while(timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)){
+  while (timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)) {
     resCount[timeIterator.format("HHmm")] = 0;
     timeIterator.add(15, "minutes");
   }
@@ -194,7 +201,7 @@ $("#date").change(function () {
   updateOperatingHours();
 
   initializeTables();
-
+console.log("++++++++++++++++++++++++++running again!");
 });
 
 //Saves time to time var when time field is changed
@@ -218,14 +225,11 @@ $(".partyNumberButton").on("click", function () {
   })
   $(this).addClass("active");
   var partyButton = $(this).children();
-  if (partyButton.attr("id") === "partyOf-7"){
+  if (partyButton.attr("id") === "partyOf-7") {
     $("#party-number-error").html("Because of our corona-virus policies, we ask that you please call us at (336) 525-2010 to make a reservation for parties of 7 or more.")
-  } 
+  }
 
   partyNumber = parseInt(partyButton.attr("id").split("-")[1]);
-  
-  
-
 
   console.log("party number in listener------", partyNumber);
 });
@@ -233,69 +237,102 @@ $(".partyNumberButton").on("click", function () {
 $("#submit-button").click(function (event) {
   event.preventDefault();
   $(".error-message").empty();
-  $("#reservation-selection-div").css("display","none");
-  if(isValidTime() && partyNumber < 7){
+  $("#reservation-selection-div").css("display", "none");
+  if (isValidTime() && partyNumber < 7) {
     checkAvailability();
-  } else if(dayOfWeek === 1){
+  } else if (dayOfWeek === 1) {
     console.log("should be changing text!");
     $("#date-error-message").text("We're closed on Mondays! Please choose another day");
-  } else if(time.isBefore(earliestResTime)){
+  } else if (time.isBefore(earliestResTime)) {
     $("#time-error-message").text("We don't open until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
-  } else if(time.isAfter(latestResTime)){
+  } else if (time.isAfter(latestResTime)) {
     $("#time-error-message").text("We stop taking reservations at " + latestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
-  } else if(partyNumber === 7){
+  } else if (partyNumber === 7) {
     $("#party-number-error").html("Because of our corona-virus policies, we ask that you please call us at (336) 525-2010 to make a reservation for parties of 7 or more.")
   }
-  
+
 });
 
 //For each table object in inside/outside table array, pull reservation data from cloud and push to table object's reservation array
-function initializeTables() {
+async function initializeTables() {
   var docPath = "scheduleByDate/" + selectedDate._i + "/";
+  // var cloudInsideTables = await cloud.collection("scheduleByDate").get();
+  // cloudInsideTables.forEach(function(doc){
+  //   console.log("...............", doc.data());
+  // });
 
 
 
-  insideTables.forEach(function (table) {
-    deferred = cloud.doc(docPath + "insideTables/" + table.tableNumber).get().then(function (doc) {
-      var data = doc.data();
-      table.reservations = [];
-      if (data != undefined && data.reservations != undefined) {
-        var orderedResArray = _.sortBy(data.reservations, "time");
-
-        orderedResArray.forEach(function (resObj) {
-          resCount[resObj.time]++;
-          resObj.time = moment(resObj.time, "HHmm");
-          console.log("-------resTime-------", resObj.time.format("h:mm A"));
-          console.log("-----same time, different format-----", resObj.time.format("HHmm"));
-          table.reservations.push(resObj);
+  await cloud.collection(docPath + "insideTables").get().then(function (querySnapshot) {
+    for (let doc of querySnapshot.docs){
+      let cloudReservations = _.sortBy(doc.data().reservations, "time");
+      if (cloudReservations.length > 0){
+        let tableIndex = insideTables.findIndex(x => x.tableNumber === cloudReservations[0].tableNumber);
+        for (let res of cloudReservations){
+          res.time = moment(res.time, "HHmm");
+          insideTables[tableIndex].reservations.push(res)
+        }
+      }
       
-        })
-      }
 
-    });
-    //deferredArray.push(deferred);
+    }
   });
 
-
-
-
-  outsideTables.forEach(function (table) {
-    deferred = cloud.doc(docPath + "outsideTables/" + table.tableNumber).get().then(function (doc) {
-      var data = doc.data();
-
-      if (data != undefined && data.reservations != undefined) {
-        var orderedResArray = _.sortBy(data.reservations, "time");
-
-        orderedResArray.forEach(function (resObj) {
-          resObj.time = moment(resObj.time, "HHmm");
-          table.reservations.push(resObj);
-        })
+  await cloud.collection(docPath + "outsideTables").get().then(function (querySnapshot) {
+    for (let doc of querySnapshot.docs){
+      let cloudReservations = _.sortBy(doc.data().reservations, "time");
+      if (cloudReservations.length > 0){
+        let tableIndex = outsideTables.findIndex(x => x.tableNumber === cloudReservations[0].tableNumber);
+        for (let res of cloudReservations){
+          res.time = moment(res.time, "HHmm");
+          outsideTables[tableIndex].reservations.push(res)
+        }
       }
+      
 
-    });
-    deferredArray.push(deferred);
-
+    }
   });
+  // insideTables.forEach(function (table) {
+  //   deferred = cloud.doc(docPath + "insideTables/" + table.tableNumber).get().then(function (doc) {
+  //     var data = doc.data();
+  //     table.reservations = [];
+  //     if (data != undefined && data.reservations != undefined) {
+  //       var orderedResArray = _.sortBy(data.reservations, "time");
+
+  //       orderedResArray.forEach(function (resObj) {
+  //         resCount[resObj.time]++;
+  //         resObj.time = moment(resObj.time, "HHmm");
+  //         console.log("-------resTime-------", resObj.time.format("h:mm A"));
+  //         console.log("-----same time, different format-----", resObj.time.format("HHmm"));
+  //         table.reservations.push(resObj);
+
+  //       })
+  //     }
+
+  //   });
+    
+  // });
+
+
+
+
+  // outsideTables.forEach(function (table) {
+  //   deferred = cloud.doc(docPath + "outsideTables/" + table.tableNumber).get().then(function (doc) {
+  //     var data = doc.data();
+
+  //     if (data != undefined && data.reservations != undefined) {
+  //       var orderedResArray = _.sortBy(data.reservations, "time");
+
+  //       orderedResArray.forEach(function (resObj) {
+  //         resObj.time = moment(resObj.time, "HHmm");
+  //         table.reservations.push(resObj);
+  //       })
+  //     }
+
+  //   });
+  //   deferredArray.push(deferred);
+
+  // });
 
   lowTopTables = _.clone(insideTables);
   lowTopTables.pop();
@@ -304,14 +341,14 @@ function initializeTables() {
 function findTable(tableArray, time) {
   var emptySeats;
   var deadTime = 999;
-  var bestOption = { deadTime: deadTime};
+  var bestOption = { deadTime: deadTime };
 
-  if(resCount[time.format("HHmm")] === 3){
+  if (resCount[time.format("HHmm")] === 3) {
     return undefined;
   }
 
   for (let table of tableArray) {
-    var bestTableOption = {deadTime : 999};
+    var bestTableOption = { deadTime: 999 };
     var isConflictingRes = false;
     tableRes = table.reservations;
     emptySeats = table.capacity - partyNumber;
@@ -327,7 +364,7 @@ function findTable(tableArray, time) {
       }
     }
 
-    
+
 
 
     //If a table doesn't have any reservations update bestOption and return it
@@ -350,7 +387,7 @@ function findTable(tableArray, time) {
         console.log("........we're looking at table: " + table.tableNumber + "........");
         var resTime = moment(reservation.time, "h:mm A");
         console.log(time.format("HHmm") + "++++++++++++++++++" + resTime.format("HHmm"));
-       
+
 
 
         //If target time is before existing res time, make sure there's 90 minute buffer. If not break and don't consider that table.
@@ -382,7 +419,7 @@ function findTable(tableArray, time) {
           }
 
           //if target time is after existing res time, make sure theres 90 minute buffer. If not, look at next table. If 90 minutes buffer, set dead time and look at next reservation to ensure theres enough buffer there.
-        } else if(time.isSame(reservation.time)){
+        } else if (time.isSame(reservation.time)) {
           isConflictingRes = true;
           console.log("time is same as current res time! break------- table number: ", table.tableNumber);
           break;
@@ -390,7 +427,7 @@ function findTable(tableArray, time) {
         } else if (time.isAfter(reservation.time)) {
           if (time.diff(reservation.time, "minutes") >= 90) {
             deadTime = time.diff(reservation.time, "minutes") - 90;
-            console.log("----------table number--------",table.tableNumber)
+            console.log("----------table number--------", table.tableNumber)
             console.log("Dead time: " + deadTime);
             console.log("------best option dead time-----" + bestTableOption.deadTime);
             if (deadTime < bestTableOption.deadTime) {
@@ -402,10 +439,10 @@ function findTable(tableArray, time) {
                 deadTime,
                 emptySeats,
                 partyNumber,
-              date: selectedDate.format("MM/DD/YYYY"),
-              dayOfWeek
+                date: selectedDate.format("MM/DD/YYYY"),
+                dayOfWeek
               };
-    
+
               // if (deadTime === 0 && i === table.reservations.length - 1) {
               //   console.log("----no dead time at table and is last res at table! Return: best option-----");
               //   return bestOption;
@@ -418,21 +455,20 @@ function findTable(tableArray, time) {
         }
       }
     }
-      if(!isConflictingRes && bestTableOption.deadTime < bestOption.deadTime){
-        bestOption = bestTableOption;
-      }
+    if (!isConflictingRes && bestTableOption.deadTime < bestOption.deadTime) {
+      bestOption = bestTableOption;
+    }
   };
   console.log("-------end of the line!------");
-  if(bestOption.deadTime === 999){
+  if (bestOption.deadTime === 999) {
     console.log("-----return undefined------");
     return undefined;
   } else {
     console.log("-----return best option-----");
     return bestOption;
-  } 
-//  return undefined;
+  }
+  //  return undefined;
 }
-
 
 function findTableBefore(tableArray, time) {
   var bestOptionBefore = undefined;
@@ -441,18 +477,18 @@ function findTableBefore(tableArray, time) {
 
   while (!timeIterator.isBefore(earliestResTime)) {
     console.log("------bestOptionBefore: " + JSON.stringify(bestOptionBefore));
-    
+
     bestOptionBefore = findTable(tableArray, timeIterator);
     console.log("-----now we're after findTable()--------");
 
-    if(bestOptionBefore != undefined){
+    if (bestOptionBefore != undefined) {
       console.log("returning bestOptionBefore!!!!!!!!", bestOptionBefore.tableNumber, bestOptionBefore.time);
       return bestOptionBefore;
     }
-    
+
     console.log(timeIterator.format("HHmm"));
     timeIterator.subtract(15, "minutes");
-    
+
     // if (timeIterator.isBefore(earliestResTime)) {
     //   return bestOptionBefore;
     // }
@@ -477,7 +513,6 @@ function findTableAfter(tableArray, time) {
   return bestOptionAfter;
 }
 
-
 function checkAvailability() {
   targetIsAvailableInside = false;
   alternativeIsAvalableInside = false;
@@ -488,31 +523,30 @@ function checkAvailability() {
   reservationOptions = {};
   $("#reservation-selection-div").css("display", "block");
 
-  //wait for cloud requests to resolve     --------WAIT NOT WORKING--------
-  $.when.apply($, deferredArray).done(function () {
+  
 
 
     //If resCount[time] < 3, look for inside table at target time
     var targetTimeOption = undefined;
-    if(resCount[time.format("HHmm")] < 3){
+    if (resCount[time.format("HHmm")] < 3) {
       targetTimeOption = findTable(insideTables, time);
     }
-    
+
 
     //If there are no tables availabe inside at target time, find available time before and after
     if (targetTimeOption === undefined) {
 
       //find before and store if found
       var insideBefore = findTableBefore(insideTables, time);
-      
+
       if (insideBefore !== undefined) {
 
         //if table found is table 8 save option as h + time in reservationOptions[] and look for inside lowtop table
-        if(insideBefore.tableNumber === "8"){
+        if (insideBefore.tableNumber === "8") {
           alternativeIsAvailableHighTop = true;
           reservationOptions["h" + insideBefore.time] = insideBefore;
           var lowTopBefore = findTableBefore(lowTopTables, time);
-          if (lowTopBefore !== undefined){
+          if (lowTopBefore !== undefined) {
             alternativeIsAvalableInside = true;
             reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
           }
@@ -521,18 +555,18 @@ function checkAvailability() {
           alternativeIsAvalableInside = true;
           reservationOptions["i" + insideBefore.time] = insideBefore;
         }
-        
+
       }
 
       //find after and store if found
       var insideAfter = findTableAfter(insideTables, time);
 
       if (insideAfter !== undefined) {
-        if(insideAfter.tableNumber === "8"){
+        if (insideAfter.tableNumber === "8") {
           alternativeIsAvailableHighTop = true;
           reservationOptions["h" + insideAfter.time] = insideAfter;
           var lowTopAfter = findTableAfter(lowTopTables, time);
-          if (lowTopAfter !== undefined){
+          if (lowTopAfter !== undefined) {
             alternativeIsAvalableInside = true;
             reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
           }
@@ -541,37 +575,37 @@ function checkAvailability() {
           alternativeIsAvalableInside = true;
           reservationOptions["i" + insideAfter.time] = insideAfter;
         }
-        
+
       }
 
       //if table is available at target time, set targetAvailableInside = true
     } else {
-      if (targetTimeOption.tableNumber === "8"){
+      if (targetTimeOption.tableNumber === "8") {
         targetIsAvailableHighTop = true;
         reservationOptions["h" + time.format("HHmm")] = targetTimeOption;
         var lowTopTarget = findTable(lowTopTables, time);
-        if (lowTopTarget !== undefined){
+        if (lowTopTarget !== undefined) {
           targetIsAvailableInside = true;
           reservationOptions["i" + time.format("HHmm")] = lowTopTarget;
         } else {
           var lowTopBefore = findTableBefore(lowTopTables, time);
-          if (lowTopBefore !== undefined){
+          if (lowTopBefore !== undefined) {
             alternativeIsAvalableInside = true;
             reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
           }
 
           var lowTopAfter = findTableAfter(lowTopTables, time);
-          if (lowTopAfter !== undefined){
+          if (lowTopAfter !== undefined) {
             alternativeIsAvalableInside = true;
             reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
           }
 
         }
-      }else {
+      } else {
         targetIsAvailableInside = true;
         reservationOptions["i" + time.format("HHmm")] = targetTimeOption;
       }
-      
+
       // var insideResultsHeader = $("<p>").html("We have an available table inside that meets your request! <br> Click below to continue.");
       // var resButton = $(".reservation-option-btn").html(time.format("h:mm A")).attr("data-location-time", "i" + time.format("HHmm"));
       // $("#inside-results").prepend(insideResultsHeader, resButton);
@@ -582,7 +616,7 @@ function checkAvailability() {
 
     //look for table outside at target time
     targetTimeOption = undefined;
-    if(resCount[time.format("HHmm")] < 3){
+    if (resCount[time.format("HHmm")] < 3) {
       targetTimeOption = findTable(insideTables, time);
     }
 
@@ -614,64 +648,64 @@ function checkAvailability() {
       var outsideHeader = $("<p>").html("Outside");
       var outsideSeatingDisclaimer = $("<p>").addClass("disclaimer").attr("id", "outside-seating-disclaimer");
       var highTopHeader = $("<p>").html("High-Top Table with Barstools");
-      
 
-      
+
+
       $("#inside-results").empty().append(insideHeader);
       $("#outside-results").empty().append(outsideHeader);
       $("#high-top-results").empty().append(highTopHeader);
-      if(alternativeIsAvailableHighTop || targetIsAvailableHighTop){
+      if (alternativeIsAvailableHighTop || targetIsAvailableHighTop) {
         $("#high-top-results").css("display", "block");
       } else $("#high-top-results").css("display", "none");
 
-      
 
-      if(targetIsAvailableInside){
-        if(targetIsAvailableOutside){
+
+      if (targetIsAvailableInside) {
+        if (targetIsAvailableOutside) {
           resultsHeader.html("We found tables that meet your request! Please choose below whether you'd like to be inside or outside.")
-        } else if(alternativeIsAvailableOutside){
-          resultsHeader.html("We found a table that meets your request inside! We don't have that time available outside but we've listed some other options. Please select an option below to continue.");   
-        } else{
+        } else if (alternativeIsAvailableOutside) {
+          resultsHeader.html("We found a table that meets your request inside! We don't have that time available outside but we've listed some other options. Please select an option below to continue.");
+        } else {
           resultsHeader.html("we found a table that meets your request inside! We're all booked outside on " + selectedDate.format("MM/DD/YYYY") + " but feel free to try another day or click continue below to confirm your reservation inside")
         }
-      } else if (alternativeIsAvalableInside){
-        if (targetIsAvailableOutside){
-          resultsHeader.html("We found a table that meets your request Outside! We don't have that time available inside but we've listed some other options. Please select an option below to continue.");   
+      } else if (alternativeIsAvalableInside) {
+        if (targetIsAvailableOutside) {
+          resultsHeader.html("We found a table that meets your request Outside! We don't have that time available inside but we've listed some other options. Please select an option below to continue.");
         }
-        if (alternativeIsAvailableOutside){
+        if (alternativeIsAvailableOutside) {
           resultsHeader.html("We don't have any tables available at " + time.format("h:mm A") + " but we've listed some options for other available times in case any of them work for you!");
         }
         else {
           resultsHeader.html("Alternative inside, outside Booked");
         }
       } else {
-        if(targetIsAvailableOutside){
+        if (targetIsAvailableOutside) {
           resultsHeader.html("booked inside, target available outside");
         }
-        else if (alternativeIsAvailableOutside){
+        else if (alternativeIsAvailableOutside) {
           resultsHeader.html("booked inside, alternative available outside");
         }
         else resultsHeader.html("Entire restaurant booked that day");
-      
+
       }
 
       resDiv.prepend(resultsHeader);
 
-      for (let [key, reservation] of Object.entries(reservationOptions)){
+      for (let [key, reservation] of Object.entries(reservationOptions)) {
         console.log("--------inside let loop to build buttons-------");
         console.log("-------key------", key);
         console.log("-------key[0]------", key[0]);
         var resButton = $("#res-btn-template").clone().removeAttr("id").html(moment(reservation.time, "HHmm").format("h:mm A"));
         resButton.attr("data-location-time", key);
-        if (key[0] === "i"){
+        if (key[0] === "i") {
           $("#inside-results").append(resButton);
-        } else if (key[0] === "o"){
+        } else if (key[0] === "o") {
           $("#outside-results").append(resButton);
-        } else { 
+        } else {
           $("#high-top-results").append(resButton);
         }
       }
-      if(targetIsAvailableOutside || alternativeIsAvailableOutside){
+      if (targetIsAvailableOutside || alternativeIsAvailableOutside) {
         $("#outside-results").append(outsideSeatingDisclaimer);
         $("#outside-seating-disclaimer").html("Please note that we cannot guarantee we'll have room to move you inside in case of rain or other foul weather!")
       }
@@ -680,7 +714,7 @@ function checkAvailability() {
 
     buildResSelectionDiv();
 
-    $(".reservation-option-btn").on("click", function(event){
+    $(".reservation-option-btn").on("click", function (event) {
       $(".reservation-option-btn").removeClass("active");
       $(this).addClass("active");
       var key = event.target.dataset.locationTime;
@@ -688,32 +722,10 @@ function checkAvailability() {
     });
 
 
-    $("#reservation-select-confirm-btn").on("click", function(event){
+    $("#reservation-select-confirm-btn").on("click", function (event) {
       window.location.href = "confirmreservation.html";
     });
 
-  });
+  
 
 }
-
-
-
-
-
-// push to existing nexted array
-  // cloud.doc("scheduleByDate/08112020/insideTables/2").update({
-
-  //   reservations: 
-  //   firebase.firestore.FieldValue.arrayUnion(
-  //     {time: "7:00:00pm",
-  //     firstName: "Betsy",
-  //   secondName: "Sith",
-  //   partyNumber: 1,
-  //   phone: 999990234234,
-  //   email: "betsyismyname@gmail.com",
-  //   tableNumber: 2})
-  // });
-
-
-
-

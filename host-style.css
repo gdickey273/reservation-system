@@ -1,0 +1,29 @@
+.schedule-button{
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.col{
+  padding: 0;
+  margin: 0;
+}
+
+.res-button{
+  background-color: #759aab;
+  height: 90px;
+ 
+}
+
+.available-button{
+  background-color: #a1c084;
+  height: 15px;
+ 
+}
+
+.unavailable-button{
+  background-color: #8a3033;
+  height: 15px;
+  
+}
+

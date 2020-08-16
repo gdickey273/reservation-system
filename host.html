@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Date Picker stylesheet -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css" />
+  <!-- Time Picker stylesheet -->
+  <link rel="stylesheet" href="assets/wickedpicker.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="host-style.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <form method="post">
+          <div class="row mt-4">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+              <div class="form-group font-user">
+                <!-- Date Picker -->
+                <label class="control-label" for="date">Date</label>
+                <input class="form-control" id="date" name="date" placeholder="MM/DD/YYY" type="text" />
+                <p class="error-message" id="date-error-message"></p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <form method="post">
+          <div class="row mt-4">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+              <div class="form-group font-user">
+                <!-- Time Picker -->
+                <label class="control-label" for="time">Time</label>
+                <input type="text" name="timepicker" class="timepicker" />
+                <p class="error-message" id="time-error-message"></p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+
+  
+
+  <div class="container">
+    <div class="row">
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table1">
+        <!-- <button class="schedule-button available-button"></button>
+        <div class="schedule-button res-button"></div> -->
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table2">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table3">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table4">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table5">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table6">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table7">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table8">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table100">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table102">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table105">
+      </div>
+      <div class="table-col col col-lg-1 col-md-1 col-sm-1 col-xs-1" id="table106">
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- The core Firebase script -->
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+
+  <!--other firebase scripts -->
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-firestore.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyBbs9m1s1ZRY1SXMRQGPPjFj5krxX09X4c",
+      authDomain: "eddy-pub-reservation-system.firebaseapp.com",
+      databaseURL: "https://eddy-pub-reservation-system.firebaseio.com",
+      projectId: "eddy-pub-reservation-system",
+      storageBucket: "eddy-pub-reservation-system.appspot.com",
+      messagingSenderId: "703341060708",
+      appId: "1:703341060708:web:24a67af9778ba170e67571",
+      measurementId: "G-98PZSZ4GWF"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+
+
+
+
+
+  </script>
+
+
+  <!-- Font Awesome script -->
+  <script src="https://use.fontawesome.com/1b460214a3.js"></script>
+
+  <!-- jQuery script -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  <!-- Time picker script -->
+  <script type="text/javascript" src="./assets/wickedpicker.js"></script>
+
+  <!-- Date picker script -->
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+
+  <!-- Moment script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+  <!-- lodash script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.19/lodash.min.js"></script>
+
+  <!-- my script -->
+  <script src="script.js"></script>
+
+  <!-- my host script-->
+  <script src="host-script.js"></script>
+
+</body>
+
+</html>
