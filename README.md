@@ -25,6 +25,7 @@ send a confirmation email in the future).
 * CSS
 * Javascript
 * jQuery
+* Bootstrap
 * Google Firebase
 * Google Firestore
 
