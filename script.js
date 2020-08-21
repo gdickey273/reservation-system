@@ -81,7 +81,7 @@ var resCount = {};
 
 
 //party number and time initialized for ease of testing
-var partyNumber = 1;
+var partyNumber;
 var selectedDate = undefined;
 var dayOfWeek;
 var dayOfWeekName;
@@ -165,7 +165,7 @@ function updateOperatingHours() {
 
   }
 
-
+  //set each resCount to 0 
   var timeIterator = moment(earliestResTime);
   while (timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)) {
     resCount[timeIterator.format("HHmm")] = 0;
@@ -618,8 +618,10 @@ function checkAvailability() {
 
     //look for table outside at target time
     targetTimeOption = undefined;
+    console.log("about to look for outside table!");
     if (resCount[time.format("HHmm")] < 3) {
-      targetTimeOption = findTable(insideTables, time);
+      console.log("passed the resCount condition!");
+      targetTimeOption = findTable(outsideTables, time);
     }
 
     //if no table available at target time, look for available table before and after
