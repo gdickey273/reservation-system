@@ -270,7 +270,8 @@ async function initializeTables() {
         let tableIndex = insideTables.findIndex(x => x.tableNumber === cloudReservations[0].tableNumber);
         for (let res of cloudReservations){
           res.time = moment(res.time, "HHmm");
-          insideTables[tableIndex].reservations.push(res)
+          insideTables[tableIndex].reservations.push(res);
+          resCount[res.time.format("HHmm")]++;
         }
       }
       
@@ -285,7 +286,8 @@ async function initializeTables() {
         let tableIndex = outsideTables.findIndex(x => x.tableNumber === cloudReservations[0].tableNumber);
         for (let res of cloudReservations){
           res.time = moment(res.time, "HHmm");
-          outsideTables[tableIndex].reservations.push(res)
+          outsideTables[tableIndex].reservations.push(res);
+          resCount[res.time.format("HHmm")]++;
         }
       }
       

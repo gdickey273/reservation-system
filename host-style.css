@@ -19,9 +19,17 @@ body{
   margin: 0;
 }
 
+.time-row{
+  border-bottom: 1px solid #333;
+}
+
 .res-button{
   background-color: #759aab;
-  height: 90px;
+  height: 100px;
+  float: left;
+  overflow: visible;
+  margin-bottom: -100px;
+  
  
 }
 
