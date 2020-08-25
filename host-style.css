@@ -14,6 +14,25 @@ body{
   float: left;
 }
 
+.reschedule-button{
+  z-index: 10;
+  position: absolute;
+  height: 40px;
+}
+
+.delete-button{
+  z-index: 10;
+  margin-top:40px;
+  position: absolute;
+  height: 40px;
+}
+
+.schedule-reservation-button{
+  z-index: 10;
+  position: absolute;
+  height: 40px;
+}
+
 .col{
   padding: 0;
   margin: 0;
@@ -23,12 +42,17 @@ body{
   border-bottom: 1px solid #333;
 }
 
+.dropdown-content{
+  display: none;
+  float: left;
+}
+
 .res-button{
   background-color: #759aab;
-  height: 100px;
-  float: left;
-  overflow: visible;
-  margin-bottom: -100px;
+  height: 20px;
+  position: absolute;
+  border-bottom-width: 0;
+  /* margin-bottom: -100px; */
   
  
 }

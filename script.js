@@ -201,7 +201,7 @@ $("#date").change(function () {
   updateOperatingHours();
 
   initializeTables();
-console.log("++++++++++++++++++++++++++running again!");
+  console.log("++++++++++++++++++++++++++running again!");
 });
 
 //Saves time to time var when time field is changed
@@ -260,37 +260,41 @@ async function initializeTables() {
   // cloudInsideTables.forEach(function(doc){
   //   console.log("...............", doc.data());
   // });
-
-
+  for (let table of insideTables) {
+    table.reservations = [];
+  }
+  for (let table of outsideTables) {
+    table.reservations = [];
+  }
 
   await cloud.collection(docPath + "insideTables").get().then(function (querySnapshot) {
-    for (let doc of querySnapshot.docs){
+    for (let doc of querySnapshot.docs) {
       let cloudReservations = _.sortBy(doc.data().reservations, "time");
-      if (cloudReservations.length > 0){
+      if (cloudReservations.length > 0) {
         let tableIndex = insideTables.findIndex(x => x.tableNumber === cloudReservations[0].tableNumber);
-        for (let res of cloudReservations){
+        for (let res of cloudReservations) {
           res.time = moment(res.time, "HHmm");
           insideTables[tableIndex].reservations.push(res);
           resCount[res.time.format("HHmm")]++;
         }
       }
-      
+
 
     }
   });
 
   await cloud.collection(docPath + "outsideTables").get().then(function (querySnapshot) {
-    for (let doc of querySnapshot.docs){
+    for (let doc of querySnapshot.docs) {
       let cloudReservations = _.sortBy(doc.data().reservations, "time");
-      if (cloudReservations.length > 0){
+      if (cloudReservations.length > 0) {
         let tableIndex = outsideTables.findIndex(x => x.tableNumber === cloudReservations[0].tableNumber);
-        for (let res of cloudReservations){
+        for (let res of cloudReservations) {
           res.time = moment(res.time, "HHmm");
           outsideTables[tableIndex].reservations.push(res);
           resCount[res.time.format("HHmm")]++;
         }
       }
-      
+
 
     }
   });
@@ -312,7 +316,7 @@ async function initializeTables() {
   //     }
 
   //   });
-    
+
   // });
 
 
@@ -525,211 +529,211 @@ function checkAvailability() {
   reservationOptions = {};
   $("#reservation-selection-div").css("display", "block");
 
-  
 
 
-    //If resCount[time] < 3, look for inside table at target time
-    var targetTimeOption = undefined;
-    if (resCount[time.format("HHmm")] < 3) {
-      targetTimeOption = findTable(insideTables, time);
+
+  //If resCount[time] < 3, look for inside table at target time
+  var targetTimeOption = undefined;
+  if (resCount[time.format("HHmm")] < 3) {
+    targetTimeOption = findTable(insideTables, time);
+  }
+
+
+  //If there are no tables availabe inside at target time, find available time before and after
+  if (targetTimeOption === undefined) {
+
+    //find before and store if found
+    var insideBefore = findTableBefore(insideTables, time);
+
+    if (insideBefore !== undefined) {
+
+      //if table found is table 8 save option as h + time in reservationOptions[] and look for inside lowtop table
+      if (insideBefore.tableNumber === "8") {
+        alternativeIsAvailableHighTop = true;
+        reservationOptions["h" + insideBefore.time] = insideBefore;
+        var lowTopBefore = findTableBefore(lowTopTables, time);
+        if (lowTopBefore !== undefined) {
+          alternativeIsAvalableInside = true;
+          reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
+        }
+
+      } else {
+        alternativeIsAvalableInside = true;
+        reservationOptions["i" + insideBefore.time] = insideBefore;
+      }
+
     }
 
+    //find after and store if found
+    var insideAfter = findTableAfter(insideTables, time);
 
-    //If there are no tables availabe inside at target time, find available time before and after
-    if (targetTimeOption === undefined) {
-
-      //find before and store if found
-      var insideBefore = findTableBefore(insideTables, time);
-
-      if (insideBefore !== undefined) {
-
-        //if table found is table 8 save option as h + time in reservationOptions[] and look for inside lowtop table
-        if (insideBefore.tableNumber === "8") {
-          alternativeIsAvailableHighTop = true;
-          reservationOptions["h" + insideBefore.time] = insideBefore;
-          var lowTopBefore = findTableBefore(lowTopTables, time);
-          if (lowTopBefore !== undefined) {
-            alternativeIsAvalableInside = true;
-            reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
-          }
-
-        } else {
+    if (insideAfter !== undefined) {
+      if (insideAfter.tableNumber === "8") {
+        alternativeIsAvailableHighTop = true;
+        reservationOptions["h" + insideAfter.time] = insideAfter;
+        var lowTopAfter = findTableAfter(lowTopTables, time);
+        if (lowTopAfter !== undefined) {
           alternativeIsAvalableInside = true;
-          reservationOptions["i" + insideBefore.time] = insideBefore;
+          reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
         }
 
-      }
-
-      //find after and store if found
-      var insideAfter = findTableAfter(insideTables, time);
-
-      if (insideAfter !== undefined) {
-        if (insideAfter.tableNumber === "8") {
-          alternativeIsAvailableHighTop = true;
-          reservationOptions["h" + insideAfter.time] = insideAfter;
-          var lowTopAfter = findTableAfter(lowTopTables, time);
-          if (lowTopAfter !== undefined) {
-            alternativeIsAvalableInside = true;
-            reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
-          }
-
-        } else {
-          alternativeIsAvalableInside = true;
-          reservationOptions["i" + insideAfter.time] = insideAfter;
-        }
-
-      }
-
-      //if table is available at target time, set targetAvailableInside = true
-    } else {
-      if (targetTimeOption.tableNumber === "8") {
-        targetIsAvailableHighTop = true;
-        reservationOptions["h" + time.format("HHmm")] = targetTimeOption;
-        var lowTopTarget = findTable(lowTopTables, time);
-        if (lowTopTarget !== undefined) {
-          targetIsAvailableInside = true;
-          reservationOptions["i" + time.format("HHmm")] = lowTopTarget;
-        } else {
-          var lowTopBefore = findTableBefore(lowTopTables, time);
-          if (lowTopBefore !== undefined) {
-            alternativeIsAvalableInside = true;
-            reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
-          }
-
-          var lowTopAfter = findTableAfter(lowTopTables, time);
-          if (lowTopAfter !== undefined) {
-            alternativeIsAvalableInside = true;
-            reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
-          }
-
-        }
       } else {
+        alternativeIsAvalableInside = true;
+        reservationOptions["i" + insideAfter.time] = insideAfter;
+      }
+
+    }
+
+    //if table is available at target time, set targetAvailableInside = true
+  } else {
+    if (targetTimeOption.tableNumber === "8") {
+      targetIsAvailableHighTop = true;
+      reservationOptions["h" + time.format("HHmm")] = targetTimeOption;
+      var lowTopTarget = findTable(lowTopTables, time);
+      if (lowTopTarget !== undefined) {
         targetIsAvailableInside = true;
-        reservationOptions["i" + time.format("HHmm")] = targetTimeOption;
-      }
-
-      // var insideResultsHeader = $("<p>").html("We have an available table inside that meets your request! <br> Click below to continue.");
-      // var resButton = $(".reservation-option-btn").html(time.format("h:mm A")).attr("data-location-time", "i" + time.format("HHmm"));
-      // $("#inside-results").prepend(insideResultsHeader, resButton);
-    }
-
-
-
-
-    //look for table outside at target time
-    targetTimeOption = undefined;
-    console.log("about to look for outside table!");
-    if (resCount[time.format("HHmm")] < 3) {
-      console.log("passed the resCount condition!");
-      targetTimeOption = findTable(outsideTables, time);
-    }
-
-    //if no table available at target time, look for available table before and after
-    if (targetTimeOption === undefined) {
-      var outsideBefore = findTableBefore(outsideTables, time);
-      if (outsideBefore !== undefined) {
-        alternativeIsAvailableOutside = true;
-        reservationOptions["o" + outsideBefore.time] = outsideBefore;
-      }
-
-      var outsideAfter = findTableAfter(outsideTables, time);
-      if (outsideAfter !== undefined) {
-        alternativeIsAvailableOutside = true;
-        reservationOptions["o" + outsideAfter.time] = outsideAfter;
-      }
-
-
-    } else {
-      targetIsAvailableOutside = true;
-      reservationOptions["o" + time.format("HHmm")] = targetTimeOption;
-    }
-
-    function buildResSelectionDiv() {
-      var resDiv = $("#reservation-selection-div");
-      $("#results-header").empty();
-      var resultsHeader = $("<h5>").attr("id", "results-header");
-      var insideHeader = $("<p>").html("Inside");
-      var outsideHeader = $("<p>").html("Outside");
-      var outsideSeatingDisclaimer = $("<p>").addClass("disclaimer").attr("id", "outside-seating-disclaimer");
-      var highTopHeader = $("<p>").html("High-Top Table with Barstools");
-
-
-
-      $("#inside-results").empty().append(insideHeader);
-      $("#outside-results").empty().append(outsideHeader);
-      $("#high-top-results").empty().append(highTopHeader);
-      if (alternativeIsAvailableHighTop || targetIsAvailableHighTop) {
-        $("#high-top-results").css("display", "block");
-      } else $("#high-top-results").css("display", "none");
-
-
-
-      if (targetIsAvailableInside) {
-        if (targetIsAvailableOutside) {
-          resultsHeader.html("We found tables that meet your request! Please choose below whether you'd like to be inside or outside.")
-        } else if (alternativeIsAvailableOutside) {
-          resultsHeader.html("We found a table that meets your request inside! We don't have that time available outside but we've listed some other options. Please select an option below to continue.");
-        } else {
-          resultsHeader.html("we found a table that meets your request inside! We're all booked outside on " + selectedDate.format("MM/DD/YYYY") + " but feel free to try another day or click continue below to confirm your reservation inside")
-        }
-      } else if (alternativeIsAvalableInside) {
-        if (targetIsAvailableOutside) {
-          resultsHeader.html("We found a table that meets your request Outside! We don't have that time available inside but we've listed some other options. Please select an option below to continue.");
-        }
-        if (alternativeIsAvailableOutside) {
-          resultsHeader.html("We don't have any tables available at " + time.format("h:mm A") + " but we've listed some options for other available times in case any of them work for you!");
-        }
-        else {
-          resultsHeader.html("Alternative inside, outside Booked");
-        }
+        reservationOptions["i" + time.format("HHmm")] = lowTopTarget;
       } else {
-        if (targetIsAvailableOutside) {
-          resultsHeader.html("booked inside, target available outside");
+        var lowTopBefore = findTableBefore(lowTopTables, time);
+        if (lowTopBefore !== undefined) {
+          alternativeIsAvalableInside = true;
+          reservationOptions["i" + lowTopBefore.time] = lowTopBefore;
         }
-        else if (alternativeIsAvailableOutside) {
-          resultsHeader.html("booked inside, alternative available outside");
+
+        var lowTopAfter = findTableAfter(lowTopTables, time);
+        if (lowTopAfter !== undefined) {
+          alternativeIsAvalableInside = true;
+          reservationOptions["i" + lowTopAfter.time] = lowTopAfter;
         }
-        else resultsHeader.html("Entire restaurant booked that day");
 
       }
+    } else {
+      targetIsAvailableInside = true;
+      reservationOptions["i" + time.format("HHmm")] = targetTimeOption;
+    }
 
-      resDiv.prepend(resultsHeader);
+    // var insideResultsHeader = $("<p>").html("We have an available table inside that meets your request! <br> Click below to continue.");
+    // var resButton = $(".reservation-option-btn").html(time.format("h:mm A")).attr("data-location-time", "i" + time.format("HHmm"));
+    // $("#inside-results").prepend(insideResultsHeader, resButton);
+  }
 
-      for (let [key, reservation] of Object.entries(reservationOptions)) {
-        console.log("--------inside let loop to build buttons-------");
-        console.log("-------key------", key);
-        console.log("-------key[0]------", key[0]);
-        var resButton = $("#res-btn-template").clone().removeAttr("id").html(moment(reservation.time, "HHmm").format("h:mm A"));
-        resButton.attr("data-location-time", key);
-        if (key[0] === "i") {
-          $("#inside-results").append(resButton);
-        } else if (key[0] === "o") {
-          $("#outside-results").append(resButton);
-        } else {
-          $("#high-top-results").append(resButton);
-        }
+
+
+
+  //look for table outside at target time
+  targetTimeOption = undefined;
+  console.log("about to look for outside table!");
+  if (resCount[time.format("HHmm")] < 3) {
+    console.log("passed the resCount condition!");
+    targetTimeOption = findTable(outsideTables, time);
+  }
+
+  //if no table available at target time, look for available table before and after
+  if (targetTimeOption === undefined) {
+    var outsideBefore = findTableBefore(outsideTables, time);
+    if (outsideBefore !== undefined) {
+      alternativeIsAvailableOutside = true;
+      reservationOptions["o" + outsideBefore.time] = outsideBefore;
+    }
+
+    var outsideAfter = findTableAfter(outsideTables, time);
+    if (outsideAfter !== undefined) {
+      alternativeIsAvailableOutside = true;
+      reservationOptions["o" + outsideAfter.time] = outsideAfter;
+    }
+
+
+  } else {
+    targetIsAvailableOutside = true;
+    reservationOptions["o" + time.format("HHmm")] = targetTimeOption;
+  }
+
+  function buildResSelectionDiv() {
+    var resDiv = $("#reservation-selection-div");
+    $("#results-header").empty();
+    var resultsHeader = $("<h5>").attr("id", "results-header");
+    var insideHeader = $("<p>").html("Inside");
+    var outsideHeader = $("<p>").html("Outside");
+    var outsideSeatingDisclaimer = $("<p>").addClass("disclaimer").attr("id", "outside-seating-disclaimer");
+    var highTopHeader = $("<p>").html("High-Top Table with Barstools");
+
+
+
+    $("#inside-results").empty().append(insideHeader);
+    $("#outside-results").empty().append(outsideHeader);
+    $("#high-top-results").empty().append(highTopHeader);
+    if (alternativeIsAvailableHighTop || targetIsAvailableHighTop) {
+      $("#high-top-results").css("display", "block");
+    } else $("#high-top-results").css("display", "none");
+
+
+
+    if (targetIsAvailableInside) {
+      if (targetIsAvailableOutside) {
+        resultsHeader.html("We found tables that meet your request! Please choose below whether you'd like to be inside or outside.")
+      } else if (alternativeIsAvailableOutside) {
+        resultsHeader.html("We found a table that meets your request inside! We don't have that time available outside but we've listed some other options. Please select an option below to continue.");
+      } else {
+        resultsHeader.html("we found a table that meets your request inside! We're all booked outside on " + selectedDate.format("MM/DD/YYYY") + " but feel free to try another day or click continue below to confirm your reservation inside")
       }
-      if (targetIsAvailableOutside || alternativeIsAvailableOutside) {
-        $("#outside-results").append(outsideSeatingDisclaimer);
-        $("#outside-seating-disclaimer").html("Please note that we cannot guarantee we'll have room to move you inside in case of rain or other foul weather!")
+    } else if (alternativeIsAvalableInside) {
+      if (targetIsAvailableOutside) {
+        resultsHeader.html("We found a table that meets your request Outside! We don't have that time available inside but we've listed some other options. Please select an option below to continue.");
       }
+      if (alternativeIsAvailableOutside) {
+        resultsHeader.html("We don't have any tables available at " + time.format("h:mm A") + " but we've listed some options for other available times in case any of them work for you!");
+      }
+      else {
+        resultsHeader.html("Alternative inside, outside Booked");
+      }
+    } else {
+      if (targetIsAvailableOutside) {
+        resultsHeader.html("booked inside, target available outside");
+      }
+      else if (alternativeIsAvailableOutside) {
+        resultsHeader.html("booked inside, alternative available outside");
+      }
+      else resultsHeader.html("Entire restaurant booked that day");
 
     }
 
-    buildResSelectionDiv();
+    resDiv.prepend(resultsHeader);
 
-    $(".reservation-option-btn").on("click", function (event) {
-      $(".reservation-option-btn").removeClass("active");
-      $(this).addClass("active");
-      var key = event.target.dataset.locationTime;
-      localStorage.setItem("selectedReservation", JSON.stringify(reservationOptions[key]));
-    });
+    for (let [key, reservation] of Object.entries(reservationOptions)) {
+      console.log("--------inside let loop to build buttons-------");
+      console.log("-------key------", key);
+      console.log("-------key[0]------", key[0]);
+      var resButton = $("#res-btn-template").clone().removeAttr("id").html(moment(reservation.time, "HHmm").format("h:mm A"));
+      resButton.attr("data-location-time", key);
+      if (key[0] === "i") {
+        $("#inside-results").append(resButton);
+      } else if (key[0] === "o") {
+        $("#outside-results").append(resButton);
+      } else {
+        $("#high-top-results").append(resButton);
+      }
+    }
+    if (targetIsAvailableOutside || alternativeIsAvailableOutside) {
+      $("#outside-results").append(outsideSeatingDisclaimer);
+      $("#outside-seating-disclaimer").html("Please note that we cannot guarantee we'll have room to move you inside in case of rain or other foul weather!")
+    }
+
+  }
+
+  buildResSelectionDiv();
+
+  $(".reservation-option-btn").on("click", function (event) {
+    $(".reservation-option-btn").removeClass("active");
+    $(this).addClass("active");
+    var key = event.target.dataset.locationTime;
+    localStorage.setItem("selectedReservation", JSON.stringify(reservationOptions[key]));
+  });
 
 
-    $("#reservation-select-confirm-btn").on("click", function (event) {
-      window.location.href = "confirmreservation.html";
-    });
+  $("#reservation-select-confirm-btn").on("click", function (event) {
+    window.location.href = "confirmreservation.html";
+  });
 
-  
+
 
 }
