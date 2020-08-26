@@ -88,6 +88,7 @@ var dayOfWeekName;
 var time;
 var earliestResTime = "";
 var latestResTime = "";
+var enoughNotice = true;
 var dataObj;
 var reservationOptions = {};
 var targetIsAvailableInside = false;
@@ -178,8 +179,10 @@ function isValidTime() {
   if (dayOfWeek === 1) {
     return false;
   }
+
   if (time.isAfter(earliestResTime) || time.isSame(earliestResTime)) {
     if (time.isBefore(latestResTime) || time.isSame(latestResTime)) {
+
       return true;
     }
   }
@@ -194,6 +197,9 @@ $("#date").change(function () {
   if (dateTracker === $(this).val()) {
     return;
   }
+
+  //Empty date error message every time the date is changed
+  $("#date-error-message").empty();
   dateTracker = $(this).val();
   selectedDate = moment($(this).val().replace(/\//g, ""), "L");
   dateCopy = moment($(this).val().replace(/\//g, ""), "L");
@@ -201,7 +207,23 @@ $("#date").change(function () {
   updateOperatingHours();
 
   initializeTables();
-  console.log("++++++++++++++++++++++++++running again!");
+
+  let now = moment();
+  console.log(now.format("MM/DD/YYYY"));
+  console.log(selectedDate.format("MM/DD/YYYY"));
+  if (now.format("MM/DD/YYYY") === selectedDate.format("MM/DD/YYYY")) {
+    console.log("---------------Same Date!");
+    if (now.day() === 0 || now.day() === 6) {
+      enoughNotice = false;
+    }
+    else if (now.isAfter(moment("1159", "HHmm"))) {
+      enoughNotice = false;
+    }
+  } else enoughNotice = true;
+
+  if(!enoughNotice) {
+    $("#date-error-message").text("Please call us at (336) 525-2010 to make same day reservations");
+  }
 });
 
 //Saves time to time var when time field is changed
@@ -238,11 +260,14 @@ $("#submit-button").click(function (event) {
   event.preventDefault();
   $(".error-message").empty();
   $("#reservation-selection-div").css("display", "none");
-  if (isValidTime() && partyNumber < 7) {
+  if (isValidTime() && partyNumber < 7 && enoughNotice) {
     checkAvailability();
   } else if (dayOfWeek === 1) {
     console.log("should be changing text!");
     $("#date-error-message").text("We're closed on Mondays! Please choose another day");
+  }  else if (!enoughNotice){
+    $("#date-error-message").text("Please call us at (336) 525-2010 to make same day reservations");
+    
   } else if (time.isBefore(earliestResTime)) {
     $("#time-error-message").text("We don't open until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
   } else if (time.isAfter(latestResTime)) {
