@@ -98,6 +98,7 @@ function checkInputValidity(){
   let lastNameInputVal = $("#last-name").val().toUpperCase();
   let phoneNumberInputVal = $("#phone").val().replace("(", "").replace(")", "").replace("-", "").split(" ").join("");
   let emailAddressInputVal = $("#email").val();
+  notes = $("#notes").val();
   console.log(phoneNumberInputVal);
   console.log(phoneNumberInputVal.length);
 
@@ -178,7 +179,8 @@ lastName,
 partyNumber,
 phoneNumber,
 emailAddress,
-tableNumber};
+tableNumber,
+notes};
 
   cloud.doc(path).update({
 
@@ -213,6 +215,12 @@ $("#submit-btn").on("click", function(event){
   
 });
 
+$("#notes").on("keyup", function(event){
+  console.log("Press!");
+  if ($("#notes").val().length === 500){
+    $("#notes-error-message").text("Please keep your notes below 500 characters");
+  } else $("#notes-error-message").empty();
+})
 updatePage();
 
 
