@@ -1,65 +1,216 @@
 <!DOCTYPE html>
+
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/7.20.0/firebase-app.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/7.20.0/firebase-auth.js"></script>
-    <script defer src="/__/firebase/7.20.0/firebase-database.js"></script>
-    <script defer src="/__/firebase/7.20.0/firebase-messaging.js"></script>
-    <script defer src="/__/firebase/7.20.0/firebase-storage.js"></script>
-    <!-- initialize the SDK after all desired features are loaded -->
-    <script defer src="/__/firebase/init.js"></script>
+<head>
+  <title>Reservation Search- The Eddy Pub</title>
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+  <!-- Date Picker stylesheet -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css" />
+
+  <!-- Bootstrap stylsheet (I think) -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+    <!-- Time Picker stylesheet -->
+  <link rel="stylesheet" href="../assets/wickedpicker.css">
+
+  <!-- My stylesheet -->
+  <link rel="stylesheet" href="../assets/style.css">
+
+</head>
+
+<body>
+
+  <input style="display:none" id="refresh" value="no">
+
+  <header>
+    <div class="container">
+      <div class="row mt-4">
+        <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+          <img src="images/eddy-logo-transparent.png" alt="The Eddy Logo">
+        </div>
+        <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+          <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link active" href="https://www.theeddypub.com/menu">Food</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.theeddypub.com/new-page-2">Culture</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.theeddypub.com/reservations">Events</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.theeddypub.com/locations">Location</a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+  </header>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 
-        try {
-          let app = firebase.app();
-          let features = ['auth', 'database', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
-          document.getElementById('load').innerHTML = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          document.getElementById('load').innerHTML = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+        <div class="row mt-4">
+          <div class="col-md-12">
+            <h5>We're excited to have you join us at the Eddy Pub! Please select the number of people in your party and
+              choose a date below to see available reservations</h5>
+          </div>
+        </div>
+
+        <div class="container">
+
+          <form method="post">
+            <div class="row mt-4">
+              <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="form-group font-user">
+                  <!-- Date Picker -->
+                  <label class="control-label" for="date">Date</label>
+                  <input class="form-control" id="date" name="date" placeholder="MM/DD/YYY" type="text" />
+                  <p class="error-message" id="date-error-message"></p>
+                </div>
+              </div>
+            </div>
+
+          
+            <form method="post">
+              <div class="row mt-4">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <div class="form-group font-user">
+                    <!-- Time Picker -->
+                    <label class="control-label" for="time">Time</label>
+                    <input type="text" name="timepicker" class="timepicker"/>
+                    <p class="error-message" id="time-error-message"></p>
+                  </div>
+                </div>
+              </div>
+
+
+              <div class="row mt-2">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <p>Number of People in Your Party</p>
+                  <div class="form-group btn-group btn-group-toggle" data-toggle="buttons">
+                    <!-- Party Number picker -->
+                    <label class="btn btn-secondary partyNumberButton active">
+                      <input type="radio" name="options" id="partyOf-1" autocomplete="off" checked> 1
+                    </label>
+                    <label class="btn btn-secondary partyNumberButton">
+                      <input type="radio" name="options" id="partyOf-2" autocomplete="off"> 2
+                    </label>
+                    <label class="btn btn-secondary partyNumberButton">
+                      <input type="radio" name="options" id="partyOf-3" autocomplete="off"> 3
+                    </label>
+                    <label class="btn btn-secondary partyNumberButton">
+                      <input type="radio" name="options" id="partyOf-4" autocomplete="off"> 4
+                    </label>
+                    <label class="btn btn-secondary partyNumberButton">
+                      <input type="radio" name="options" id="partyOf-5" autocomplete="off"> 5
+                    </label>
+                    <label class="btn btn-secondary partyNumberButton">
+                      <input type="radio" name="options" id="partyOf-6" autocomplete="off"> 6
+                    </label>
+                    <label class="btn btn-secondary partyNumberButton">
+                      <input type="radio" name="options" id="partyOf-7" autocomplete="off"> 7+
+                    </label>
+
+                  </div>
+                  <p class = "error-message" id = "party-number-error"></p>
+                </div>
+
+
+
+              </div>
+
+            <div class="form-group">
+
+              <!-- Submit button -->
+              <a href= "#reservation-selection-div" class="btn btn-primary " id="submit-button">Submit</a>
+            </div>
+
+
+
+          </form>
+          <div class="container">
+            <div class = "row" id="reservation-selection-div">
+              
+              <div class = "results mt-2 col-lg-6 col-md-6 col-sm-6 col-xs-12" id= "inside-results">
+                
+              </div>
+              
+              <div class = "results mt-2 col-lg-6 col-md-6 col-sm-6 col-xs-12" id= "outside-results">
+              </div>
+
+              <div class = "results mt-2 col-lg-6 col-md-6 col-sm-6 col-xs-12" id= "high-top-results">
+              </div>
+
+              <button class = "btn btn-primary mt-2" id = "reservation-select-confirm-btn">Confirm Reservation</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- reservation-option-button -->
+  <button type="radio" name="resOptions" class="btn btn-primary reservation-option-btn" id="res-btn-template"></button>
+  
+  
+  <!-- The core Firebase script -->
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+
+  <!--other firebase scripts -->
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-firestore.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyBbs9m1s1ZRY1SXMRQGPPjFj5krxX09X4c",
+      authDomain: "eddy-pub-reservation-system.firebaseapp.com",
+      databaseURL: "https://eddy-pub-reservation-system.firebaseio.com",
+      projectId: "eddy-pub-reservation-system",
+      storageBucket: "eddy-pub-reservation-system.appspot.com",
+      messagingSenderId: "703341060708",
+      appId: "1:703341060708:web:24a67af9778ba170e67571",
+      measurementId: "G-98PZSZ4GWF"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+
+
+
+
+
+  </script>
+
+  
+<!-- Font Awesome script -->
+<script src="https://use.fontawesome.com/1b460214a3.js"></script>
+
+<!-- jQuery script -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+  <!-- Time picker script -->
+  <script type="text/javascript" src="../assets/wickedpicker.js"></script>
+
+  <!-- Date picker script -->
+  <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+
+    <!-- Moment script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+  <!-- lodash script -->
+  <script src= "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.19/lodash.min.js"></script>
+
+  <!-- my script -->
+  <script src="../assets/script.js"></script>
+</body>
+
 </html>

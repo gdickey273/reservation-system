@@ -1,7 +1,7 @@
-
 let hostDateTracker;
 let currentDropdown;
-function initializeSchedule() {
+async function initializeSchedule() {
+  await initializeTables();
   let isReservation = false;
   let isAvailable = false;
   let resButtonDropdown = `<div class= "dropdown-content">
@@ -60,6 +60,8 @@ function initializeSchedule() {
       }
 
       if (timeIterator.isSame(res.time)) {
+        console.log("``````````````````````tableclass!", tableClass);
+
         //let button = $("<button>").addClass("schedule-button res-button");
         isReservation = true;
         for (let i = 0; i < 6; i++) {
@@ -109,17 +111,20 @@ function initializeSchedule() {
   }
 
   for (let table of outsideTables) {
+    console.log("Looking at outside tables!");
+
 
     let timeIterator = moment(earliestResTime, "HHmm");
     let tableClass = `.table-${table.tableNumber}`;
     if (table.reservations.length === 0) {
+      console.log(`Table ${table.tableNumber} has no reservations!`);
       while (timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)) {
         let rowClass = `.row-${timeIterator.format("HHmm")}`;
         isAvailable = resCount[timeIterator.format("HHmm")] < 3 ? true : false;
 
-        let button = $("<button>").addClass(isAvailable ? "available-button" : "unavailable-button");
-        button.addClass("schedule-button");
-        $(rowClass).find(tableClass).html(button);
+        // let button = $("<button>").addClass(isAvailable ? "available-button" : "unavailable-button");
+        // button.addClass("schedule-button");
+        $(rowClass).find(tableClass).html(buildDivHTML());
 
 
         timeIterator.add(15, "m");
@@ -127,20 +132,24 @@ function initializeSchedule() {
     }
 
     for (let [i, res] of table.reservations.entries()) {
+      console.log("-----------------time iterator: ", timeIterator.format("HHmm") + " res.time: " + res.time.format("HHmm"));
       while (timeIterator.isBefore(res.time)) {
+        isReservation = false;
         let rowClass = `.row-${timeIterator.format("HHmm")}`;
-        let button = $("<button>").addClass("schedule-button");
+        // let button = $("<button>").addClass("schedule-button");
         if (res.time.diff(timeIterator, "m") < 90) {
-          button.addClass("unavailable-button");
+         // button.addClass("unavailable-button");
+         isAvailable = false;
         } else if (resCount[timeIterator.format("HHmm")] >= 3) {
-          button.addClass("unavailable-button");
-        } else button.addClass("available-button");
+          //button.addClass("unavailable-button");
+          isAvailable = false;
+        } else isAvailable = true; //button.addClass("available-button");
 
-        $(rowClass).find(tableClass).html(button);
+        $(rowClass).find(tableClass).html(buildDivHTML());
         timeIterator.add(15, "m");
       }
 
-
+      // console.log("-----------------time iterator: ", timeIterator.format("HHmm") + " res.time: " + res.time.format("HHmm"));
       if (timeIterator.isSame(res.time)) {
         //let button = $("<button>").addClass("schedule-button res-button");
         isReservation = true;
@@ -155,14 +164,15 @@ function initializeSchedule() {
       console.log("--------------i=", i);
       console.log("table.reservations.length", table.reservations.length);
       if (i === table.reservations.length - 1) {
+        isReservation = false;
         while (timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)) {
           console.log("***************in while loop after reservations");
           let rowClass = `.row-${timeIterator.format("HHmm")}`;
           isAvailable = resCount[timeIterator.format("HHmm")] < 3 ? true : false;
 
-          let button = $("<button>").addClass(isAvailable ? "available-button" : "unavailable-button");
-          button.addClass("schedule-button");
-          $(rowClass).find(tableClass).html(button);
+          // let button = $("<button>").addClass(isAvailable ? "available-button" : "unavailable-button");
+          // button.addClass("schedule-button");
+          $(rowClass).find(tableClass).html(buildDivHTML);
 
 
           timeIterator.add(15, "m");
@@ -201,10 +211,11 @@ $("#date").change(function () {
   // resCount[1600] = 3;
   // resCount[1800] = 3;
 
-  window.setTimeout(function () {
-    buildScheduleGrid();
+  buildScheduleGrid();
     initializeSchedule();
-  }, 1000)
+  // window.setTimeout(function () {
+    
+  // }, 1000)
 
 
 })
@@ -212,55 +223,42 @@ $("#date").change(function () {
 function buildScheduleGrid() {
   $("#time-rows").empty();
   console.log("building schedule grid!");
-
+  $("#schedule-table").html(`<tr id="header-row">
+  <th></th>
+  <th class="table-1">Table 1</th>
+  <th class="table-2">Table 2</th>
+  <th class="table-3">Table 3</th>
+  <th class="table-4">Table 4</th>
+  <th class="table-5">Table 5</th>
+  <th class="table-6">Table 6</th>
+  <th class="table-7">Table 7</th>
+  <th class="table-8">Table 8</th>
+  <th class="table-100">Table 100</th>
+  <th class="table-102">Table 102</th>
+  <th class="table-105">Table 105</th>
+  <th class="table-106">Table 106</th>
+</tr>`);
   let timeIterator = moment(earliestResTime, "HHmm");
   while (timeIterator.isBefore(latestResTime) || timeIterator.isSame(latestResTime)) {
     console.log("----------in the while loop!--------");
     let timeRowHTML = `
-  <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1 time-header">
-    ${timeIterator.format("h:mm")}
-  </div>
-
-  <div class="col-lg-11 col-md-11 col-sm-11 col-xs-11">
-    <div class="row">
-      <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-        <div class="row">
-          <div class="col-lg col-md col-sm col-xs table-1">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-2">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-3">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-4">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-5">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-6">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-7">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-8">
-            
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-        <div class="row">
-          <div class="col-lg col-md col-sm col-xs table-100">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-102">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-105">
-          </div>
-          <div class="col-lg col-md col-sm col-xs table-106">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-    let timeRow = $("<div>").addClass(`row row-${timeIterator.format("HHmm")} time-row`)
+      <th>${timeIterator.format("h:mm")}</th>
+      <td class="table-1"></td>
+      <td class="table-2"></td>
+      <td class="table-3"></td>
+      <td class="table-4"></td>
+      <td class="table-5"></td>
+      <td class="table-6"></td>
+      <td class="table-7"></td>
+      <td class="table-8"></td>
+      <td class="table-100"></td>
+      <td class="table-102"></td>
+      <td class="table-105"></td>
+      <td class="table-106"></td>`
+    
+    let timeRow = $("<tr>").addClass(`row-${timeIterator.format("HHmm")} time-row`)
     timeRow.html(timeRowHTML);
-    $("#time-rows").append(timeRow);
+    $("#schedule-table").append(timeRow);
     timeIterator.add(15, "m");
   }
 
