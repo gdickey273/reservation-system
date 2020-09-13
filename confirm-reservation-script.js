@@ -190,15 +190,17 @@ notes};
     reservationData.dayOfWeek = dayOfWeek;
     reservationData.date = date;
     localStorage.setItem("confirmedReservation", JSON.stringify(reservationData));
-    window.location.href = "confirmation.html";
-    // cloud.collection('mail').add({
-    //   to: 'gdickey273@gmail.com',
-    //   message: {
-    //     subject: 'Hello from Firebase!',
-    //     text: 'This is the plaintext section of the email body.',
-    //     html: 'This is the <code>HTML</code> section of the email body.',
-    //   }
-    // }).then(() => console.log('Queued email for delivery!'));
+    
+    cloud.collection('mail').add({
+      to: emailAddress,
+      message: {
+        subject: `The Eddy Pub Reservation Confirmation`,
+        html: `<img src='./images/eddy-logo-transparent.png' alt='The Eddy Logo'><br>
+        <h2>Thank you for booking a reservation with us at the Eddy Pub! We've got you down for ${partyNumber} ${partyNumber > 1 ? "people" : "person"} on 
+        ${dayOfWeek}, ${reservationData.date} at ${time.format("h:mm A")} under the name ${firstName} ${lastName}. 
+        We'll see you then!</h2>`
+      }
+    }).then(() => window.location.href = "confirmation.html");
   });
 
 
