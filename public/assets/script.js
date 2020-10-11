@@ -88,6 +88,7 @@ var time;
 var earliestResTime = "";
 var latestResTime = "";
 var enoughNotice = true;
+var tooFarInAdvance = false;
 var dataObj;
 var reservationOptions = {};
 var targetIsAvailableInside = false;
@@ -227,6 +228,12 @@ $("#date").change(function () {
   if(!enoughNotice) {
     $("#date-error-message").text("Please call us at (336) 525-2010 to make same day reservations");
   }
+
+  if(selectedDate.diff(now, 'd') > 27) {
+    tooFarInAdvance = true;
+    $("#date-error-message").text("Please call us at (336) 525-2010 to make reservations more than 4 weeks in advance");
+  }
+
 });
 
 //Saves time to time var when time field is changed
@@ -255,19 +262,31 @@ $("#submit-button").click(function (event) {
   event.preventDefault();
   $(".error-message").empty();
   $("#reservation-selection-div").css("display", "none");
-  if (isValidTime() && partyNumber < 7 && enoughNotice) {
+  if (isValidTime() && partyNumber < 7 && enoughNotice && !tooFarInAdvance) {
     checkAvailability();
-  } else if (dayOfWeek === 1) {
-    
+  }
+  
+  if (dayOfWeek === 1) {  
     $("#date-error-message").text("We're closed on Mondays! Please choose another day");
-  }  else if (!enoughNotice){
+  }
+  
+  if (!enoughNotice){
     $("#date-error-message").text("Please call us at (336) 525-2010 to make same day reservations");
-    
-  } else if (time.isBefore(earliestResTime)) {
+  }
+  
+  if(tooFarInAdvance){
+    $("#date-error-message").text("Please call us at (336) 525-2010 to make reservations more than 4 weeks in advance");
+  }
+
+  if (time.isBefore(earliestResTime)) {
     $("#time-error-message").text("We don't open until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
-  } else if (time.isAfter(latestResTime)) {
+  }
+  
+  if (time.isAfter(latestResTime)) {
     $("#time-error-message").text("We stop taking reservations at " + latestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
-  } else if (partyNumber === 7) {
+  }
+  
+  if (partyNumber === 7) {
     $("#party-number-error").html("Because of our corona-virus policies, we ask that you please call us at (336) 525-2010 to make a reservation for parties of 7 or more.")
   }
 
