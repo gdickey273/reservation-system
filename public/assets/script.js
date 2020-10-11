@@ -262,7 +262,7 @@ $("#submit-button").click(function (event) {
   event.preventDefault();
   $(".error-message").empty();
   $("#reservation-selection-div").css("display", "none");
-  if (isValidTime() && partyNumber < 7 && enoughNotice && !tooFarInAdvance) {
+  if (isValidTime() && partyNumber < 7 && enoughNotice ){//&& !tooFarInAdvance) {
     checkAvailability();
   }
   
@@ -652,16 +652,16 @@ function checkAvailability() {
         resultsHeader.html("We don't have any tables available at " + time.format("h:mm A") + " but we've listed some options for other available times in case any of them work for you!");
       }
       else {
-        resultsHeader.html("Alternative inside, outside Booked");
+        resultsHeader.html("We don't have that time available but have listed some alternatives below!");
       }
     } else {
       if (targetIsAvailableOutside) {
-        resultsHeader.html("booked inside, target available outside");
+        resultsHeader.html("We found a table that meets your request outside! We're all booked up inside on " + selectedDate.format("MM/DD/YYYY" + " but feel free to try another day!"));
       }
       else if (alternativeIsAvailableOutside) {
-        resultsHeader.html("booked inside, alternative available outside");
+        resultsHeader.html("We don't have any tables available at that time but have listed some alternatives below!");
       }
-      else resultsHeader.html("Entire restaurant booked that day");
+      else resultsHeader.html(`We're sorry to say we're completely booked on ${selectedDate.format("MM/DD/YYYY")}! Please try another day.`);
 
     }
 
