@@ -60,6 +60,11 @@ var outsideTables = [
     reservations: []
   },
   {
+    tableNumber: "103",
+    capacity: 4,
+    reservations: []
+  },
+  {
     tableNumber: "105",
     capacity: 4,
     reservations: []
