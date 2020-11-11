@@ -196,10 +196,10 @@ notes};
     
     cloud.collection('mail').add({
       to: emailAddress,
-      cc: "eddyreservationlog@gmail.com",
+      bcc: "eddyreservationlog@gmail.com",
       message: {
         subject: `The Eddy Pub Reservation Confirmation`,
-        html: `<img src='./images/eddy-logo-transparent.png' alt='The Eddy Logo'><br>
+        html: `
         <h2>Thank you for booking a reservation with us at the Eddy Pub! We've got you down for ${partyNumber} ${partyNumber > 1 ? "people" : "person"} on 
         ${dayOfWeek}, ${reservationData.date} at ${time.format("h:mm A")} under the name ${firstName} ${lastName}. 
         We'll see you then!</h2>`
