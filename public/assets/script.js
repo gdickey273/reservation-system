@@ -138,7 +138,7 @@ function updateOperatingHours() {
   switch (dayOfWeek) {
     case 0:
       earliestResTime = moment("1000", "HHmm");
-      latestResTime = moment("2000", "HHmm");
+      latestResTime = moment("1945", "HHmm");
       dayOfWeekName = "Sunday";
       break;
     case 1:
@@ -147,26 +147,26 @@ function updateOperatingHours() {
     case 2:
       dayOfWeekName = "Tuesday";
       earliestResTime = moment("1600", "HHmm");
-      latestResTime = moment("1930", "HHmm");
+      latestResTime = moment("1945", "HHmm");
       break;
     case 3:
       dayOfWeekName = "Wednesday";
       earliestResTime = moment("1600", "HHmm");
-      latestResTime = moment("1930", "HHmm");
+      latestResTime = moment("1945", "HHmm");
       break;
     case 4:
       dayOfWeekName = "Thursday";
       earliestResTime = moment("1600", "HHmm");
-      latestResTime = moment("1930", "HHmm");
+      latestResTime = moment("1945", "HHmm");
       break;
     case 5:
       dayOfWeekName = "Friday";
       earliestResTime = moment("1600", "HHmm");
-      latestResTime = moment("1930", "HHmm");
+      latestResTime = moment("2030", "HHmm");
       break;
     case 6:
       earliestResTime = moment("1000", "HHmm");
-      latestResTime = moment("2000", "HHmm");
+      latestResTime = moment("2030", "HHmm");
       dayOfWeekName = "Saturday";
       break;
 
