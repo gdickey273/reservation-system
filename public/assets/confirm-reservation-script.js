@@ -196,6 +196,7 @@ notes};
     
     cloud.collection('mail').add({
       to: emailAddress,
+      cc: "eddyreservationlog@gmail.com",
       message: {
         subject: `The Eddy Pub Reservation Confirmation`,
         html: `<img src='./images/eddy-logo-transparent.png' alt='The Eddy Logo'><br>
