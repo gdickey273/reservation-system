@@ -199,10 +199,31 @@ notes};
       bcc: "eddyreservationlog@gmail.com",
       message: {
         subject: `The Eddy Pub Reservation Confirmation`,
-        html: `
-        <h2>Thank you for booking a reservation with us at the Eddy Pub! We've got you down for ${partyNumber} ${partyNumber > 1 ? "people" : "person"} on 
-        ${dayOfWeek}, ${reservationData.date} at ${time.format("h:mm A")} under the name ${firstName} ${lastName}. 
-        We'll see you then!</h2>`
+        html: 
+        `<div>
+        <img style="height:150px; width:auto;" src="https://images.squarespace-cdn.com/content/5956a474ccf2106856898d23/1498851213545-UXMZE3RQ4WH4H75K7ED4/Eddy+logo+transparent.png?content-type=image%2Fpng">
+        </div>
+        
+        <div style="color:#000;">
+        <h2 style="color:#000;">Thank you for booking a reservation with us at the Eddy Pub!</h2>
+        <p style="color:#000;">We've got you down for ${partyNumber} ${partyNumber > 1 ? "people" : "person"} on 
+        ${dayOfWeek}, ${reservationData.date} at ${time.format("h:mm A")} under the name ${firstName} ${lastName}.<br> 
+        I acknowledge that by making this reservation:
+        <ul>
+            <li> I have no symptoms related to Covid-19 and will not dine at The Eddy should I develop symptoms</li>
+            <li> I have not knowingly been in contact with anyone who has Covid-19 in the last 14 days</li>
+            <li> I have not tested positive for Covid-19 in the last 14 days</li>
+            <li> The Eddy reserves the right to check my temperature upon entering the establishment should I present with symptoms</li>
+            <li> I understand my reservation is for an hour and 15 min, and a mask must be worn. </li>
+            <li> I am knowingly choosing to dine in a restaurant during a Pandemic and where risk of contracting Covid-19 may be present. I hold The Eddy, its staff, owners, and customers harmless in any claims where possibility of contraction is concerned.</li>
+        </ul>
+Don't be THAT GUY/GAL and not show up for your reservation. That's just mean - to us, our staff, and other customers. We need everyone's cooperation to make this work. Please let us know if you are unable to make your reservation as soon as possible.
+
+For OUTSIDE Tables: 
+
+I understand that I am booking a table outside where the weather is unpredictable and which may cause my reservation to change at no fault of anyone. The Eddy cannot guarantee table availability inside in the case of bad weather, and I may choose to cancel or change my reservation ahead of time to avoid any hardship.<br>
+        </p>
+        </div>`
       }
     }).then(() => window.location.href = "confirmation.html");
   });
