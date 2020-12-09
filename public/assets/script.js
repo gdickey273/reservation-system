@@ -267,7 +267,12 @@ $("#submit-button").click(function (event) {
   event.preventDefault();
   $(".error-message").empty();
   $("#reservation-selection-div").css("display", "none");
-  if (isValidTime() && partyNumber < 7 && enoughNotice ){//&& !tooFarInAdvance) {
+  var isAnniversaryParty = false;
+  if (selectedDate.format("MM/DD/YYYY") === "12/15/2020" || selectedDate.format("MM/DD/YYYY") === "12/16/2020"){
+    isAnniversaryParty = true
+  }
+
+  if (isValidTime() && partyNumber < 7 && enoughNotice && !isAnniversaryParty){//&& !tooFarInAdvance) {
     checkAvailability();
   }
   
@@ -283,6 +288,9 @@ $("#submit-button").click(function (event) {
     $("#date-error-message").text("Please call us at (336) 525-2010 to make reservations more than 4 weeks in advance");
   }
 
+  if(selectedDate.format("MM/DD/YYYY") === "12/15/2020" || selectedDate.format("MM/DD/YYYY") === "12/16/2020"){
+    $("#date-error-message").text("Please call us to schedule a reservation during our 10 year anniversary celebration!");
+  }
   if (time.isBefore(earliestResTime)) {
     $("#time-error-message").text("We don't start taking reservations until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
   }
