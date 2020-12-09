@@ -284,7 +284,7 @@ $("#submit-button").click(function (event) {
   }
 
   if (time.isBefore(earliestResTime)) {
-    $("#time-error-message").text("We don't open until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
+    $("#time-error-message").text("We don't start taking reservations until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
   }
   
   if (time.isAfter(latestResTime)) {
