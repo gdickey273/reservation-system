@@ -231,9 +231,7 @@ $("#date").change(function () {
     }
   } else enoughNotice = true;
 
-  if (selectedDate.format("MM/DD/YYYY") === "12/25/2020" || selectedDate.format("MM/DD/YYYY") === "01/01/2021") {
-    isHoliday = true;
-  }
+ 
 
   
   if(!enoughNotice) {
@@ -278,6 +276,10 @@ $("#submit-button").click(function (event) {
     isAnniversaryParty = true
   }
 
+  if (selectedDate.format("MM/DD/YYYY") === "12/25/2020" || selectedDate.format("MM/DD/YYYY") === "01/01/2021") {
+    isHoliday = true;
+  } else isHoliday = false;
+
   if (isValidTime() && partyNumber < 7 && enoughNotice && !isAnniversaryParty && !isHoliday){//&& !tooFarInAdvance) {
     checkAvailability();
   }
@@ -301,7 +303,7 @@ $("#submit-button").click(function (event) {
   if(isHoliday) {
     $("#date-error-message").text("Sorry we'll be closed on " + selectedDate.format("MM/DD/YYYY"));
   }
-  
+
   if (time.isBefore(earliestResTime)) {
     $("#time-error-message").text("We don't start taking reservations until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
   }
