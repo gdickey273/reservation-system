@@ -93,6 +93,7 @@ var time;
 var earliestResTime = "";
 var latestResTime = "";
 var enoughNotice = true;
+var isHoliday = false;
 var tooFarInAdvance = false;
 var dataObj;
 var reservationOptions = {};
@@ -230,6 +231,11 @@ $("#date").change(function () {
     }
   } else enoughNotice = true;
 
+  if (selectedDate.format("MM/DD/YYYY") === "12/25/2020" || selectedDate.format("MM/DD/YYYY") === "01/01/2021") {
+    isHoliday = true;
+  }
+
+  
   if(!enoughNotice) {
     $("#date-error-message").text("Please call us at (336) 525-2010 to make same day reservations");
   }
@@ -272,7 +278,7 @@ $("#submit-button").click(function (event) {
     isAnniversaryParty = true
   }
 
-  if (isValidTime() && partyNumber < 7 && enoughNotice && !isAnniversaryParty){//&& !tooFarInAdvance) {
+  if (isValidTime() && partyNumber < 7 && enoughNotice && !isAnniversaryParty && !isHoliday){//&& !tooFarInAdvance) {
     checkAvailability();
   }
   
@@ -291,6 +297,11 @@ $("#submit-button").click(function (event) {
   if(selectedDate.format("MM/DD/YYYY") === "12/15/2020" || selectedDate.format("MM/DD/YYYY") === "12/16/2020"){
     $("#date-error-message").text("Please call us to schedule a reservation during our 10 year anniversary celebration!");
   }
+
+  if(isHoliday) {
+    $("#date-error-message").text("Sorry we'll be closed on " + selectedDate.format("MM/DD/YYYY"));
+  }
+  
   if (time.isBefore(earliestResTime)) {
     $("#time-error-message").text("We don't start taking reservations until " + earliestResTime.format("h:mm A") + " on " + dayOfWeekName + "'s. Please choose another time");
   }
